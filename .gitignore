@@ -4,3 +4,5 @@ e2e/artifacts/*.png
 *.log
 .env
 .env.local
+.vercel
+SPACE_README.md
