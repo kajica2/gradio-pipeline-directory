@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Gradio Pipeline Directory — Deploy with one command</title>
+  <meta name="description" content="Discover and instantly deploy open-source Gradio pipelines for audio and video. Zero local setup, just paste a Hugging Face token. Powered by HF Spaces, free, open source." />
+  <meta name="theme-color" content="#0a0b10" />
+  <meta property="og:title" content="Gradio Pipeline Directory — Deploy with one command" />
+  <meta property="og:description" content="Open-source Gradio audio/video pipelines. Copy one command, paste a token, ship a Space in 60 seconds." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kajica2.github.io/gradio-pipeline-directory/" />
+  <link rel="canonical" href="https://kajica2.github.io/gradio-pipeline-directory/" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%237dd3c0'%2F%3E%3Ctext x='50' y='72' font-size='60' font-family='ui-monospace,monospace' font-weight='800' text-anchor='middle' fill='%230a0b10'%3EG%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="shared/styles.css" />
+</head>
+<body>
+  <div class="container">
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" style="text-decoration: none; color: inherit;">
+          <div class="brand__mark" aria-hidden="true">G</div>
+          <div class="brand__text">
+            <h1>Gradio Pipeline Directory</h1>
+            <p>Zero-setup deploys to HF Spaces</p>
+          </div>
+        </a>
+
+        <div class="search">
+          <svg class="search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="search__input" id="search-input" type="search" placeholder="Search tools, owners, topics…" autocomplete="off" />
+          <span class="search__kbd" aria-hidden="true">/</span>
+        </div>
+
+        <div class="header-actions">
+          <nav class="nav" aria-label="Primary">
+            <a class="nav__link nav__link--active" href="index.html#directory">Directory</a>
+            <a class="nav__link" href="index.html#hub">Hub</a>
+            <a class="nav__link" href="tester.html">Tester</a>
+          </nav>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme">
+            <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            <span id="theme-label">Theme</span>
+          </button>
+          <a class="btn-submit" id="submit-btn" href="https://github.com/kajica2/gradio-pipeline-directory/issues/new?template=submit-tool.md" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Submit a tool
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Marketing hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="section-eyebrow">Open source · Free · Zero config</p>
+      <h2 id="hero-title" class="hero__title">Ship any Gradio pipeline to a HF Space in 60 seconds.</h2>
+      <p class="hero__sub">Browse 12 verified open-source audio &amp; video tools. Copy one command. Paste your Hugging Face token. No Python, no cloning, no GPU setup.</p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#directory">Browse the directory</a>
+        <a class="btn" href="tester.html">Test a deployed Space</a>
+        <a class="btn btn--ghost" href="#hub">Open the Hub</a>
+      </div>
+      <ul class="hero__signals" aria-label="Trust signals">
+        <li><strong>12</strong> curated, deployable tools</li>
+        <li><strong>100%</strong> free — no payment, no signup</li>
+        <li><strong>~60s</strong> from copy to live Space</li>
+        <li><strong>0</strong> local dependencies</li>
+      </ul>
+    </section>
+
+    <div class="layout" id="directory">
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Filters">
+        <div class="sidebar__section">
+          <p class="sidebar__label">
+            Categories
+            <span class="sidebar__label__count" id="cats-count">0</span>
+          </p>
+          <div class="sidebar__pills" id="category-pills" role="group" aria-label="Filter by category"></div>
+        </div>
+
+        <div class="sidebar__divider"></div>
+
+        <div class="sidebar__section">
+          <p class="sidebar__label">Sort by</p>
+          <div class="sidebar__sort" id="sort-options" role="radiogroup" aria-label="Sort by"></div>
+        </div>
+
+        <div class="sidebar__divider"></div>
+
+        <div class="sidebar__section">
+          <p class="sidebar__label">Quick links</p>
+          <ul class="sidebar__links" style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;">
+            <li><a href="tester.html">→ Test a deployed Space</a></li>
+            <li><a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">→ Get a HF token (write)</a></li>
+            <li><a href="https://gradio.app/guides/sharing-your-app" target="_blank" rel="noopener">→ Gradio deploy guide</a></li>
+            <li><a href="https://kajica2.github.io/music-transcription-monitor/" target="_blank" rel="noopener">→ Music Transcription Monitor</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar__divider"></div>
+
+        <div class="sidebar__foot">
+          <p>Zero local setup. Pick a tool → copy the deploy command → paste it after you have a HF token. The Space is yours to run, fork, and break.</p>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main class="main">
+
+        <div class="section-head">
+          <div>
+            <p class="section-eyebrow">Directory</p>
+            <h2 class="section-title">Open-source Gradio pipelines, ready to deploy</h2>
+          </div>
+          <p class="section-meta" id="result-count">— tools</p>
+        </div>
+
+        <div class="notice">
+          <strong>How this works.</strong> Each card is a real, working Gradio app. Click any card to see the <code>gradio deploy</code> command. Run it with your Hugging Face token and the tool is live on a Space in ~60 seconds. No cloning, no Python, no GPU setup.
+          <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener" style="margin-left: 6px;">Get a token →</a>
+        </div>
+
+        <div class="toolbar" id="toolbar" hidden>
+          <span style="font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-faint);">Active filters:</span>
+          <div id="active-filters" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+          <button class="toolbar__clear" id="clear-filters" type="button">Clear all</button>
+        </div>
+
+        <div id="results" class="grid" aria-live="polite">
+          <!-- Cards injected by app.js -->
+        </div>
+
+        <div id="empty-state" class="empty" hidden>
+          <div class="empty__icon">⌕</div>
+          <h3>No tools match your filters</h3>
+          <p>Try clearing the search or removing some category filters.</p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Hub: 12 personal research + build sections × 5 persona-lens versions -->
+    <section class="hub" id="hub" aria-labelledby="hub-title">
+      <div class="section-head">
+        <div>
+          <p class="section-eyebrow">Hub</p>
+          <h2 id="hub-title" class="section-title">Personal research + build dashboard</h2>
+        </div>
+        <p class="section-meta" id="hub-count">— sections</p>
+      </div>
+      <p class="hub__sub">12 curated sections × 5 persona-lens versions. Pick a version (Builder, Musician, Researcher, Creative Coder, Director) and the cards re-curate through that lens. Click any card to open it.</p>
+
+      <!-- Version selector (populated by app.js) -->
+      <div class="version-picker" id="version-picker" role="tablist" aria-label="Hub version">
+        <span class="version-picker__label">View as</span>
+        <div class="version-picker__pills" id="version-pills"></div>
+        <span class="version-picker__hint" id="version-hint">—</span>
+      </div>
+
+      <div class="grid grid--hub" id="hub-grid" aria-live="polite">
+        <!-- Cards injected by app.js -->
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <span>Gradio Pipeline Directory</span>
+      <span><span class="dot">·</span>v0.2<span class="dot">·</span><a href="https://github.com/kajica2/gradio-pipeline-directory" target="_blank" rel="noopener" style="color:inherit;">open source on GitHub</a><span class="dot">·</span><span id="footer-date">—</span></span>
+    </footer>
+  </div>
+
+  <!-- Modal (hidden by default) -->
+  <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal" id="modal-card">
+      <div class="modal__head">
+        <h3 class="modal__title" id="modal-title">Section</h3>
+        <button class="modal__close" id="modal-close" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <div class="modal__body" id="modal-body">
+        <!-- Filled by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast (hidden by default) -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="shared/app.js"></script>
+</body>
+</html>

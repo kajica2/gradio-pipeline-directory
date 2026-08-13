@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Gradio Pipeline Tester — Connect to any HF Space</title>
+  <meta name="description" content="Test any deployed Gradio app on Hugging Face Spaces. Connect, inspect the API, and fire requests. No local setup." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%237dd3c0'/%3E%3Ctext x='50' y='72' font-size='60' font-family='ui-monospace,monospace' font-weight='800' text-anchor='middle' fill='%230a0b10'%3ET%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="shared/styles.css" />
+</head>
+<body>
+  <div class="container">
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" style="text-decoration: none; color: inherit;">
+          <div class="brand__mark" aria-hidden="true">T</div>
+          <div class="brand__text">
+            <h1>Gradio Pipeline Tester</h1>
+            <p>Connect → Inspect API → Fire test request</p>
+          </div>
+        </a>
+
+        <div class="header-actions" style="margin-left: auto;">
+          <nav class="nav" aria-label="Primary">
+            <a class="nav__link" href="index.html">Directory</a>
+            <a class="nav__link nav__link--active" href="tester.html">Tester</a>
+          </nav>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme">
+            <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            <span id="theme-label">Theme</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <nav class="nav" aria-label="Breadcrumb" style="margin-bottom: var(--s-5); font-family: var(--font-mono); font-size: var(--fs-sm);">
+        <a href="index.html">Directory</a><span class="dot">›</span><span>Tester</span>
+      </nav>
+
+      <div class="section-head">
+        <div>
+          <p class="section-eyebrow">Tool</p>
+          <h2 class="section-title">Test any deployed Gradio app</h2>
+        </div>
+        <p class="section-meta">Browser-only · uses @gradio/client</p>
+      </div>
+
+      <div class="notice">
+        <strong>How this works.</strong> Paste the URL of any deployed Gradio Space (yours, or one from the directory). The page connects via the official <code>@gradio/client</code>, lists the available API endpoints, and lets you fire a real request. Useful for sanity-checking a deploy before you wire it into your app.
+      </div>
+
+      <div class="tester">
+        <!-- Input panel -->
+        <div class="tester__panel">
+          <p class="tester__label">Space URL or owner/name</p>
+          <div class="tester__row">
+            <input class="tester__input" id="space-url" type="text" placeholder="e.g. openai/whisper or https://huggingface.co/spaces/openai/whisper" />
+            <button class="tester__btn" id="connect-btn" type="button">Connect</button>
+          </div>
+
+          <p class="tester__label" style="margin-top: var(--s-3);">Quick picks (from the directory)</p>
+          <div id="quick-picks" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+
+          <p class="tester__label" style="margin-top: var(--s-4);">Endpoints</p>
+          <div id="endpoints" class="endpoint-list">
+            <p style="color: var(--text-faint); font-family: var(--font-mono); font-size: var(--fs-xs); margin: 0;">Connect to a Space to see its endpoints.</p>
+          </div>
+
+          <p class="tester__label" style="margin-top: var(--s-4);">Log</p>
+          <div class="log" id="log"></div>
+        </div>
+
+        <!-- Output / call panel -->
+        <div class="tester__panel">
+          <p class="tester__label">Call an endpoint</p>
+          <p id="selected-endpoint" style="font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--text-faint); margin: 0 0 var(--s-3) 0;">— Select an endpoint —</p>
+
+          <div id="endpoint-form">
+            <p style="color: var(--text-faint); font-size: var(--fs-sm);">Pick an endpoint on the left to generate the form.</p>
+          </div>
+
+          <div class="tester__row" style="margin-top: var(--s-3);">
+            <button class="tester__btn" id="call-btn" type="button" disabled>▶ Fire request</button>
+            <button class="tester__btn tester__btn--secondary" id="cancel-btn" type="button" disabled>■ Cancel</button>
+          </div>
+
+          <p class="tester__label" style="margin-top: var(--s-4);">Response</p>
+          <pre class="response" id="response">Run a request to see the response here.</pre>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <span>Gradio Pipeline Directory</span>
+      <span><span class="dot">·</span>Tester v0.1<span class="dot">·</span><span id="footer-date">—</span></span>
+    </footer>
+  </div>
+
+  <script type="module">
+    /* =================================================================
+       Gradio Pipeline Tester
+       Uses @gradio/client (from esm.sh CDN) to connect to any HF Space,
+       inspect the API, and fire requests. Zero backend, zero token.
+       ================================================================= */
+    import { Client } from "https://esm.sh/@gradio/client@0.20.1";
+
+    // ---------- DOM ----------
+    const $url      = document.getElementById('space-url');
+    const $connect  = document.getElementById('connect-btn');
+    const $quick    = document.getElementById('quick-picks');
+    const $ends     = document.getElementById('endpoints');
+    const $form     = document.getElementById('endpoint-form');
+    const $selEp    = document.getElementById('selected-endpoint');
+    const $call     = document.getElementById('call-btn');
+    const $cancel   = document.getElementById('cancel-btn');
+    const $resp     = document.getElementById('response');
+    const $log      = document.getElementById('log');
+    const $themeBtn = document.getElementById('theme-toggle');
+
+    // ---------- State ----------
+    let client = null;
+    let currentSpace = null;
+    let currentEndpoints = [];
+    let currentEndpoint = null;
+    let activeJob = null;
+    const formState = {}; // { paramName: value }
+
+    // ---------- Helpers ----------
+    function log(message, level) {
+      level = level || 'info';
+      const t = new Date();
+      const ts = t.toTimeString().slice(0, 8) + '.' + String(t.getMilliseconds()).padStart(3, '0');
+      const line = document.createElement('div');
+      line.className = 'log__line log__line--' + level;
+      line.textContent = ts + '  ' + level.toUpperCase().padEnd(5, ' ') + '  ' + message;
+      $log.appendChild(line);
+      $log.scrollTop = $log.scrollHeight;
+    }
+    function setResponse(text, kind) {
+      $resp.textContent = text;
+      $resp.classList.remove('response--ok', 'response--err');
+      if (kind) $resp.classList.add('response--' + kind);
+    }
+    function parseSpaceRef(input) {
+      const s = (input || '').trim();
+      if (!s) return null;
+      // Full URL: huggingface.co/spaces/owner/name OR hf.space/owner/name
+      let m = s.match(/huggingface\.co\/spaces\/([^/]+)\/([^/?#]+)/i);
+      if (m) return { owner: m[1], name: m[2] };
+      m = s.match(/hf\.space\/([^/]+)\/([^/?#]+)/i);
+      if (m) return { owner: m[1], name: m[2] };
+      // owner/name shorthand
+      m = s.match(/^([^/\s]+)\/([^/\s]+)$/);
+      if (m) return { owner: m[1], name: m[2] };
+      return null;
+    }
+    function componentInputType(comp) {
+      // Map a Gradio component type to a sensible default form field.
+      const t = comp.type || '';
+      if (t === 'textbox' || t === 'text' || t === 'number') return t === 'number' ? 'number' : 'text';
+      if (t === 'slider') return 'slider';
+      if (t === 'checkbox') return 'checkbox';
+      if (t === 'dropdown') return 'dropdown';
+      if (t === 'audio') return 'audio';
+      if (t === 'image') return 'image';
+      if (t === 'video') return 'video';
+      if (t === 'file') return 'file';
+      if (t === 'dataframe') return 'textarea';
+      if (t === 'json') return 'textarea';
+      return 'text';
+    }
+    function getCss(v) {
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+
+    // ---------- Connect ----------
+    async function connect() {
+      const ref = parseSpaceRef($url.value);
+      if (!ref) {
+        log('Could not parse space ref. Use "owner/name" or full HF URL.', 'err');
+        return;
+      }
+      $connect.disabled = true;
+      $connect.textContent = '…';
+      log('Connecting to ' + ref.owner + '/' + ref.name + '…', 'info');
+      setResponse('Connecting…');
+      try {
+        const c = await Client.connect(ref.owner + '/' + ref.name);
+        client = c;
+        currentSpace = ref;
+        // Inspect config
+        const config = c.config || {};
+        const deps = config.dependencies || [];
+        currentEndpoints = deps;
+        log('Connected. Found ' + deps.length + ' endpoint(s).', 'ok');
+        renderEndpoints();
+      } catch (e) {
+        log('Connect failed: ' + (e.message || e), 'err');
+        setResponse('Connect failed: ' + (e.message || e), 'err');
+      } finally {
+        $connect.disabled = false;
+        $connect.textContent = 'Connect';
+      }
+    }
+
+    function renderEndpoints() {
+      $ends.innerHTML = '';
+      if (!currentEndpoints.length) {
+        $ends.innerHTML = '<p style="color: var(--text-faint); font-family: var(--font-mono); font-size: var(--fs-xs); margin: 0;">No endpoints detected. The Space may still be starting up.</p>';
+        return;
+      }
+      currentEndpoints.forEach((dep, i) => {
+        const apiName = dep.api_name || ('predict_' + i);
+        const inputs = dep.inputs || [];
+        const inputTypes = inputs.map(componentInputType).join(', ');
+        const node = document.createElement('div');
+        node.className = 'endpoint';
+        node.innerHTML =
+          '<p class="endpoint__name">/' + apiName + '</p>' +
+          '<p class="endpoint__type">' + inputs.length + ' input(s) · ' + (inputTypes || 'none') + '</p>';
+        node.addEventListener('click', () => selectEndpoint(i));
+        $ends.appendChild(node);
+      });
+    }
+
+    function selectEndpoint(index) {
+      currentEndpoint = currentEndpoints[index];
+      if (!currentEndpoint) return;
+      const apiName = currentEndpoint.api_name || ('predict_' + index);
+      const inputs = currentEndpoint.inputs || [];
+      $selEp.innerHTML = '<span style="color: var(--accent);">/' + apiName + '</span>  ·  ' + inputs.length + ' input(s)';
+
+      $form.innerHTML = '';
+      formState._clear();
+      formState._set = (k, v) => { formState[k] = v; };
+      formState._clear = () => { Object.keys(formState).forEach(k => { if (k !== '_set' && k !== '_clear') delete formState[k]; }); };
+      formState._clear();
+
+      if (inputs.length === 0) {
+        const note = document.createElement('p');
+        note.style.cssText = 'color: var(--text-faint); font-size: var(--fs-sm); margin: 0;';
+        note.textContent = 'No inputs required. Click "Fire request" to call this endpoint.';
+        $form.appendChild(note);
+      } else {
+        inputs.forEach((comp, i) => {
+          const label = comp.label || comp.props?.label || ('Input ' + (i + 1)) + ' (' + (comp.type || '?') + ')';
+          const key = 'p' + i;
+          formState[key] = comp.props?.value ?? '';
+          const t = componentInputType(comp);
+          const field = document.createElement('div');
+          field.className = 'api-field';
+          const lbl = document.createElement('label');
+          lbl.textContent = label;
+          field.appendChild(lbl);
+
+          if (t === 'text' || t === 'number') {
+            const inp = document.createElement('input');
+            inp.type = t;
+            inp.value = formState[key] || '';
+            inp.placeholder = t === 'number' ? '0' : 'string';
+            inp.addEventListener('input', () => formState[key] = inp.value);
+            field.appendChild(inp);
+          } else if (t === 'textarea') {
+            const ta = document.createElement('textarea');
+            ta.value = formState[key] || '';
+            ta.placeholder = 'JSON or text';
+            ta.addEventListener('input', () => formState[key] = ta.value);
+            field.appendChild(ta);
+          } else if (t === 'slider') {
+            const min = comp.props?.minimum ?? 0;
+            const max = comp.props?.maximum ?? 100;
+            const step = comp.props?.step ?? 1;
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex; align-items:center; gap: 8px;';
+            const inp = document.createElement('input');
+            inp.type = 'range';
+            inp.min = min; inp.max = max; inp.step = step;
+            inp.value = formState[key] || min;
+            inp.style.flex = '1';
+            const out = document.createElement('span');
+            out.style.cssText = 'font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text); min-width: 40px; text-align: right;';
+            out.textContent = inp.value;
+            inp.addEventListener('input', () => {
+              formState[key] = parseFloat(inp.value);
+              out.textContent = inp.value;
+            });
+            wrap.appendChild(inp);
+            wrap.appendChild(out);
+            field.appendChild(wrap);
+          } else if (t === 'checkbox') {
+            const wrap = document.createElement('label');
+            wrap.style.cssText = 'display:flex; align-items:center; gap: 8px; cursor: pointer; padding: 4px 0;';
+            const inp = document.createElement('input');
+            inp.type = 'checkbox';
+            inp.checked = !!formState[key];
+            inp.addEventListener('change', () => formState[key] = inp.checked);
+            const t2 = document.createElement('span');
+            t2.style.cssText = 'font-family: var(--font-mono); font-size: var(--fs-sm); color: var(--text);';
+            t2.textContent = 'Enable';
+            wrap.appendChild(inp);
+            wrap.appendChild(t2);
+            field.appendChild(wrap);
+          } else if (t === 'dropdown') {
+            const sel = document.createElement('select');
+            const choices = comp.props?.choices || [];
+            choices.forEach(c => {
+              const opt = document.createElement('option');
+              opt.value = c;
+              opt.textContent = c;
+              sel.appendChild(opt);
+            });
+            if (formState[key]) sel.value = formState[key];
+            sel.addEventListener('change', () => formState[key] = sel.value);
+            field.appendChild(sel);
+          } else if (t === 'audio' || t === 'image' || t === 'video' || t === 'file') {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            if (t === 'image') inp.accept = 'image/*';
+            if (t === 'audio') inp.accept = 'audio/*';
+            if (t === 'video') inp.accept = 'video/*';
+            const hint = document.createElement('p');
+            hint.style.cssText = 'color: var(--text-faint); font-size: var(--fs-xs); margin: 4px 0 0;';
+            hint.textContent = 'Will be uploaded to the Space on fire.';
+            inp.addEventListener('change', () => {
+              const f = inp.files?.[0];
+              if (f) formState[key] = f;
+            });
+            field.appendChild(inp);
+            field.appendChild(hint);
+          } else {
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.value = formState[key] || '';
+            inp.addEventListener('input', () => formState[key] = inp.value);
+            field.appendChild(inp);
+          }
+
+          $form.appendChild(field);
+        });
+      }
+
+      $call.disabled = false;
+      $cancel.disabled = true;
+      setResponse('Form ready. Click "Fire request" to call /' + apiName + '.');
+    }
+
+    async function callEndpoint() {
+      if (!client || !currentEndpoint) return;
+      const inputs = currentEndpoint.inputs || [];
+      const payload = inputs.map((_, i) => formState['p' + i]);
+      $call.disabled = true;
+      $cancel.disabled = false;
+      setResponse('Calling…');
+      log('Calling /' + (currentEndpoint.api_name || 'predict') + ' with ' + payload.length + ' arg(s)…', 'info');
+      activeJob = { canceled: false };
+      const myJob = activeJob;
+      try {
+        const t0 = performance.now();
+        const result = await client.predict(currentEndpoint.api_name, payload);
+        const dt = Math.round(performance.now() - t0);
+        if (myJob.canceled) {
+          log('Call canceled by user (response ignored).', 'warn');
+          setResponse('Canceled.', 'err');
+          return;
+        }
+        // Format result
+        let text;
+        try {
+          text = JSON.stringify(result, null, 2);
+          if (text.length > 8000) text = text.slice(0, 8000) + '\n…(truncated)';
+        } catch (e) {
+          text = String(result);
+        }
+        log('OK · ' + dt + 'ms · response received', 'ok');
+        setResponse(text, 'ok');
+      } catch (e) {
+        log('Error: ' + (e.message || e), 'err');
+        setResponse('Error: ' + (e.message || e), 'err');
+      } finally {
+        $call.disabled = false;
+        $cancel.disabled = true;
+        activeJob = null;
+      }
+    }
+
+    function cancelCall() {
+      if (activeJob) {
+        activeJob.canceled = true;
+        log('Cancel requested. (in-flight requests cannot be aborted by the client, but the result will be ignored)', 'warn');
+        $call.disabled = false;
+        $cancel.disabled = true;
+      }
+    }
+
+    // ---------- Quick picks ----------
+    async function loadQuickPicks() {
+      try {
+        const r = await fetch('data/featured.json', { cache: 'no-store' });
+        if (!r.ok) return;
+        const featured = await r.json();
+        const picks = (featured.tools || []).filter(t => t.spaceUrl).slice(0, 8);
+        $quick.innerHTML = '';
+        picks.forEach(t => {
+          const ref = t.spaceUrl.replace(/^https?:\/\/huggingface\.co\/spaces\//, '');
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip';
+          btn.style.cssText = 'cursor: pointer; transition: all 120ms ease;';
+          btn.textContent = t.name;
+          btn.title = ref;
+          btn.addEventListener('click', () => {
+            $url.value = ref;
+            connect();
+          });
+          btn.addEventListener('mouseenter', () => { btn.style.background = 'var(--accent-dim)'; btn.style.color = 'var(--accent)'; });
+          btn.addEventListener('mouseleave', () => { btn.style.background = ''; btn.style.color = ''; });
+          $quick.appendChild(btn);
+        });
+      } catch (e) { /* quick picks are best-effort */ }
+    }
+
+    // ---------- Theme ----------
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('gpd-theme', theme); } catch (e) {}
+    }
+    (function initTheme() {
+      let saved;
+      try { saved = localStorage.getItem('gpd-theme'); } catch (e) {}
+      applyTheme(saved === 'light' ? 'light' : 'dark');
+    })();
+    $themeBtn.addEventListener('click', () => {
+      applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    // ---------- Wire up ----------
+    $connect.addEventListener('click', connect);
+    $url.addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
+    $call.addEventListener('click', callEndpoint);
+    $cancel.addEventListener('click', cancelCall);
+
+    document.getElementById('footer-date').textContent = new Date().toISOString().slice(0, 10);
+
+    log('Tester ready. Paste a Space URL or pick one from the chips above.', 'info');
+    loadQuickPicks();
+  </script>
+</body>
+</html>

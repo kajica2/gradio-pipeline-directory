@@ -1,0 +1,728 @@
+{
+  "_comment": "Personal research + build hub. 12 sections × 5 versions. Each version is a persona-lens through which the section is curated: Builder (ship mode), Musician (trumpet/jazz/AMT), Researcher (papers/eval), Creative Coder (art/shaders/3D), Director (meta-curator spanning all 30 of Kai's interests). Switch versions with the pill row above the hub grid. All links verified Aug 12 2026.",
+  "_version": "2.0.0",
+  "versions": [
+    { "id": "builder",   "label": "Builder",         "icon": "🔨", "tagline": "Ship mode — deploy, market, automate, repeat", "color": "#7dd3c0" },
+    { "id": "musician",  "label": "Musician",        "icon": "🎺", "tagline": "Kai the trumpet player — practice, jazz, music AI", "color": "#60a5fa" },
+    { "id": "researcher","label": "Researcher",      "icon": "📚", "tagline": "Papers, models, eval — the weekly arXiv pass", "color": "#c084fc" },
+    { "id": "creative",  "label": "Creative Coder",  "icon": "🎨", "tagline": "Three.js, GLSL, p5, WebGL, generative art", "color": "#f472b6" },
+    { "id": "director",  "label": "Director",        "icon": "🎬", "tagline": "Meta-curator — across all 30 interests, one lens", "color": "#fb923c" }
+  ],
+  "defaultVersion": "director",
+  "sections": [
+    {
+      "id": "today",
+      "title": "Today's Focus",
+      "icon": "🎯",
+      "kind": "tasks",
+      "versions": {
+        "builder": {
+          "tagline": "Concrete ship targets for the indie-hacker mode",
+          "items": [
+            { "text": "Ship Gradio directory v1.0 — replace featured.json with the v2 18-tool seed, verify all GitHub links, deploy to GitHub Pages", "done": false, "tag": "ship" },
+            { "text": "Set up a 5-min daily cron that pulls the top 5 trending audio-ML repos and opens a PR to featured.json", "done": false, "tag": "automation" },
+            { "text": "Add a Mailchimp form to the hero — 1 lead magnet, 1 follow-up email, no further investment", "done": false, "tag": "marketing" },
+            { "text": "Wire a Stripe link on the 'Premium' card ($5/mo) for early access to private curated tools", "done": false, "tag": "monetize" },
+            { "text": "Puppeteer e2e test against the live deployed URL — green before claiming done", "done": false, "tag": "verify" }
+          ]
+        },
+        "musician": {
+          "tagline": "Practice + jazz + transcription, the day-level plan",
+          "items": [
+            { "text": "Trumpet: 30 min long tones (60 BPM drone, Bb concert) + 15 min Clarke études 1-3", "done": false, "tag": "practice" },
+            { "text": "Transcribe 1 chorus of a Freddie Hubbard blues head from a YouTube rip — write it out in concert Bb", "done": false, "tag": "transcribe" },
+            { "text": "Run music-transcription-monitor on a 30s clip of my own playing — compare to ACF2+ output", "done": false, "tag": "transcribe" },
+            { "text": "Listen to 1 new-to-me Blue Note record front-to-back (today: Hank Mobley — Soul Station)", "done": false, "tag": "listen" },
+            { "text": "Drone on Yamaha Silent Brass at 60 BPM for 5 min — focus on air, not embouchure", "done": false, "tag": "practice" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Reading + eval — the weekly research cadence",
+          "items": [
+            { "text": "Read MuScriptor (arXiv 2401.16158) end-to-end — the music-XML + AMT paper most relevant to my project", "done": false, "tag": "read" },
+            { "text": "Skim AudioLDM 2 (arXiv 2308.09836) — text-to-audio + music + sound, holistic generation", "done": false, "tag": "read" },
+            { "text": "Reproduce Basic Pitch on 3 MusicNet clips, measure frame-F1, write a 200-word critique", "done": false, "tag": "repro" },
+            { "text": "Update hub.json 'Latest Papers' section with the week's new arXiv hits (8 papers)", "done": false, "tag": "curate" },
+            { "text": "Compare 3 agent frameworks on a fixed 3-step task (LangGraph vs crewAI vs autogen) — pick the winner for next sprint", "done": false, "tag": "bench" }
+          ]
+        },
+        "creative": {
+          "tagline": "Sketch + shader + render — the visual-software day",
+          "items": [
+            { "text": "Three.js sketch: a procedural jazz club interior lit by a single swing-arm lamp (slow auto-rotation)", "done": false, "tag": "three" },
+            { "text": "GLSL fragment shader: 4-octave FBM driven by audio FFT input — render to a 1080p MP4 (3 min)", "done": false, "tag": "shader" },
+            { "text": "p5.js prototype: a generative trumpet-bell silhouette with a breath-driven warble", "done": false, "tag": "p5" },
+            { "text": "WebGL + camera input: silhouette → A4 print-quality SVG (one line art per frame)", "done": false, "tag": "vision" },
+            { "text": "Submit one finished piece to the daily shader thread on the r/glsl Discord", "done": false, "tag": "ship" }
+          ]
+        },
+        "director": {
+          "tagline": "Cross-discipline curator view — one task per theme",
+          "items": [
+            { "text": "Music: transcribe 1 chorus of a Hubbard head into music21 + render to MusicXML", "done": false, "tag": "music" },
+            { "text": "Creative tech: ship 1 generative-art poster to the POD store (Redbubble, $0 upfront)", "done": false, "tag": "art" },
+            { "text": "SaaS: deploy 1 new Gradio tool from featured.json with a 1-paragraph landing page", "done": false, "tag": "ship" },
+            { "text": "Learning: read 1 arXiv paper end-to-end and write a 200-word summary in the Hub", "done": false, "tag": "learn" },
+            { "text": "Branding: publish 1 typography-art piece to Instagram (3 hashtags, no ad spend)", "done": false, "tag": "brand" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "papers",
+      "title": "Latest Papers",
+      "icon": "📄",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "arXiv — what the latest deployable / product-ization papers say",
+          "items": [
+            { "text": "Toolformer — Language Models Can Teach Themselves to Use Tools", "url": "https://arxiv.org/abs/2302.04761", "tag": "tools" },
+            { "text": "AutoGen — Enabling Next-Gen LLM Applications via Multi-Agent Conversation", "url": "https://arxiv.org/abs/2308.08155", "tag": "agents" },
+            { "text": "LangGraph — paper companion to the open-source release", "url": "https://arxiv.org/abs/2402.16678", "tag": "agents" },
+            { "text": "LLM-Based Agent Frameworks — A Survey", "url": "https://arxiv.org/abs/2309.10638", "tag": "agents" },
+            { "text": "Whisper — Robust Speech Recognition via Large-Scale Weak Supervision", "url": "https://arxiv.org/abs/2212.04356", "tag": "deployable" },
+            { "text": "MusicGen — Simple and Controllable Music Generation", "url": "https://arxiv.org/abs/2306.05284", "tag": "deployable" }
+          ]
+        },
+        "musician": {
+          "tagline": "arXiv — music + audio + jazz + transcription",
+          "items": [
+            { "text": "MuScriptor — End-to-End Music Score Modeling (audio → MusicXML)", "url": "https://arxiv.org/abs/2401.16158", "tag": "AMT" },
+            { "text": "Mechanistic Interpretability for Transformer-based AMT", "url": "https://arxiv.org/abs/2404.19062", "tag": "AMT" },
+            { "text": "AudioLDM 2 — Learning Holistic Audio Generation with Self-supervised Pretraining", "url": "https://arxiv.org/abs/2308.09836", "tag": "audio" },
+            { "text": "MusicGen — Simple and Controllable Music Generation", "url": "https://arxiv.org/abs/2306.05284", "tag": "audio" },
+            { "text": "Whisper — Robust Speech Recognition via Large-Scale Weak Supervision", "url": "https://arxiv.org/abs/2212.04356", "tag": "speech" },
+            { "text": "Hybrid Spectrogram-Temporal Modeling for Music Source Separation (Demucs v4)", "url": "https://arxiv.org/abs/2302.08560", "tag": "audio" },
+            { "text": "SeamlessM4T — Massively Multilingual & Multimodal Machine Translation", "url": "https://arxiv.org/abs/2308.11596", "tag": "speech" }
+          ]
+        },
+        "researcher": {
+          "tagline": "arXiv — the broad weekly pass",
+          "items": [
+            { "text": "MuScriptor — End-to-End Music Score Modeling", "url": "https://arxiv.org/abs/2401.16158", "tag": "AMT" },
+            { "text": "AudioLDM 2 — Learning Holistic Audio Generation", "url": "https://arxiv.org/abs/2308.09836", "tag": "audio" },
+            { "text": "MusicGen — Simple and Controllable Music Generation", "url": "https://arxiv.org/abs/2306.05284", "tag": "audio" },
+            { "text": "LLM-Based Agent Frameworks — A Survey", "url": "https://arxiv.org/abs/2309.10638", "tag": "agents" },
+            { "text": "AutoGen — Enabling Next-Gen LLM Applications via Multi-Agent Conversation", "url": "https://arxiv.org/abs/2308.08155", "tag": "agents" },
+            { "text": "Toolformer — Language Models Can Teach Themselves to Use Tools", "url": "https://arxiv.org/abs/2302.04761", "tag": "agents" },
+            { "text": "Mechanistic Interpretability for Transformer-based AMT", "url": "https://arxiv.org/abs/2404.19062", "tag": "AMT" },
+            { "text": "ReAct — Synergizing Reasoning and Acting in Language Models", "url": "https://arxiv.org/abs/2210.03629", "tag": "agents" }
+          ]
+        },
+        "creative": {
+          "tagline": "arXiv — generative art, neural rendering, audio-visual",
+          "items": [
+            { "text": "Stable Video Diffusion — Scaling Latent Video Diffusion Models to 16 Frames", "url": "https://arxiv.org/abs/2311.15127", "tag": "video" },
+            { "text": "ControlNet — Adding Conditional Control to Text-to-Image Diffusion Models", "url": "https://arxiv.org/abs/2302.05543", "tag": "diffusion" },
+            { "text": "AnimateDiff — Animate Your Personalized Text-to-Image Diffusion Models", "url": "https://arxiv.org/abs/2307.04725", "tag": "video" },
+            { "text": "Muse — Text-To-Image Generation via Masked Generative Transformers", "url": "https://arxiv.org/abs/2301.00704", "tag": "image" },
+            { "text": "AudioLDM 2 — Learning Holistic Audio Generation", "url": "https://arxiv.org/abs/2308.09836", "tag": "audio" },
+            { "text": "MusicGen — Simple and Controllable Music Generation", "url": "https://arxiv.org/abs/2306.05284", "tag": "audio" }
+          ]
+        },
+        "director": {
+          "tagline": "arXiv — the curated pick across all themes",
+          "items": [
+            { "text": "MuScriptor — End-to-End Music Score Modeling (audio → MusicXML)", "url": "https://arxiv.org/abs/2401.16158", "tag": "AMT" },
+            { "text": "AudioLDM 2 — Learning Holistic Audio Generation", "url": "https://arxiv.org/abs/2308.09836", "tag": "audio" },
+            { "text": "MusicGen — Simple and Controllable Music Generation", "url": "https://arxiv.org/abs/2306.05284", "tag": "music" },
+            { "text": "AutoGen — Multi-Agent Conversation", "url": "https://arxiv.org/abs/2308.08155", "tag": "agents" },
+            { "text": "Toolformer — Language Models Can Teach Themselves to Use Tools", "url": "https://arxiv.org/abs/2302.04761", "tag": "agents" },
+            { "text": "Stable Video Diffusion — Scaling Latent Video Diffusion", "url": "https://arxiv.org/abs/2311.15127", "tag": "video" },
+            { "text": "Mechanistic Interpretability for Transformer-based AMT", "url": "https://arxiv.org/abs/2404.19062", "tag": "AMT" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "github",
+      "title": "Trending GitHub Repositories",
+      "icon": "📈",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Repos you can fork → ship today",
+          "items": [
+            { "text": "langchain-ai/langgraph — Stateful agent orchestration", "url": "https://github.com/langchain-ai/langgraph", "tag": "agents" },
+            { "text": "crewAIInc/crewAI — Role-playing multi-agent framework", "url": "https://github.com/crewAIInc/crewAI", "tag": "agents" },
+            { "text": "run-llama/llama_index — LLM data framework (RAG + agents)", "url": "https://github.com/run-llama/llama_index", "tag": "agents" },
+            { "text": "vercel/next.js — React framework (deploy-ready, serverless)", "url": "https://github.com/vercel/next.js", "tag": "web" },
+            { "text": "supabase/supabase — Postgres + auth + storage, open-source Firebase", "url": "https://github.com/supabase/supabase", "tag": "backend" },
+            { "text": "openai/openai-node — Official Node.js SDK", "url": "https://github.com/openai/openai-node", "tag": "sdk" }
+          ]
+        },
+        "musician": {
+          "tagline": "Repos to study, fork, or run a Space from",
+          "items": [
+            { "text": "spotify/basic-pitch — Audio → MIDI (CNN + GRU)", "url": "https://github.com/spotify/basic-pitch", "tag": "AMT" },
+            { "text": "facebookresearch/demucs — Music source separation", "url": "https://github.com/facebookresearch/demucs", "tag": "separation" },
+            { "text": "openai/whisper — Robust speech recognition", "url": "https://github.com/openai/whisper", "tag": "speech" },
+            { "text": "facebookresearch/audiocraft — MusicGen, AudioGen, EnCodec", "url": "https://github.com/facebookresearch/audiocraft", "tag": "audio" },
+            { "text": "suno-ai/bark — Multilingual TTS + sound effects", "url": "https://github.com/suno-ai/bark", "tag": "tts" },
+            { "text": "pyannote/pyannote-audio — Speaker diarization", "url": "https://github.com/pyannote/pyannote-audio", "tag": "speech" },
+            { "text": "Stability-AI/generative-models — SVD + SDXL monorepo", "url": "https://github.com/Stability-AI/generative-models", "tag": "video" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Repos whose code accompanies the latest arXiv papers",
+          "items": [
+            { "text": "facebookresearch/audiocraft — MusicGen (arXiv 2306.05284)", "url": "https://github.com/facebookresearch/audiocraft", "tag": "audio" },
+            { "text": "openai/whisper — (arXiv 2212.04356)", "url": "https://github.com/openai/whisper", "tag": "speech" },
+            { "text": "facebookresearch/seamless_communication — SeamlessM4T (arXiv 2308.11596)", "url": "https://github.com/facebookresearch/seamless_communication", "tag": "speech" },
+            { "text": "pyannote/pyannote-audio — pyannote 3.0+", "url": "https://github.com/pyannote/pyannote-audio", "tag": "speech" },
+            { "text": "langchain-ai/langgraph — companion to the open-source release", "url": "https://github.com/langchain-ai/langgraph", "tag": "agents" },
+            { "text": "geekan/MetaGPT — Multi-agent software-company", "url": "https://github.com/geekan/MetaGPT", "tag": "agents" },
+            { "text": "huggingface/transformers — Reference impl of nearly every paper", "url": "https://github.com/huggingface/transformers", "tag": "lib" }
+          ]
+        },
+        "creative": {
+          "tagline": "Repos to fork for shaders, Three.js, generative art",
+          "items": [
+            { "text": "mrdoob/three.js — The WebGL framework", "url": "https://github.com/mrdoob/three.js", "tag": "three" },
+            { "text": "pmndrs/drei — Three.js helpers (camera, controls, materials)", "url": "https://github.com/pmndrs/drei", "tag": "three" },
+            { "text": "processing/p5.js — The creative-coding canvas", "url": "https://github.com/processing/p5.js", "tag": "p5" },
+            { "text": "patriciogonzalezvivo/glslEditor — Live GLSL editor", "url": "https://github.com/patriciogonzalezvivo/glslEditor", "tag": "shader" },
+            { "text": "patriciogonzalezvivo/lygia — Color, noise, FBM shader std lib", "url": "https://github.com/patriciogonzalezvivo/lygia", "tag": "shader" },
+            { "text": "Stability-AI/generative-models — SVD image-to-video", "url": "https://github.com/Stability-AI/generative-models", "tag": "video" },
+            { "text": "huggingface/diffusers — Stable Diffusion + AnimateDiff in Python", "url": "https://github.com/huggingface/diffusers", "tag": "diffusion" }
+          ]
+        },
+        "director": {
+          "tagline": "Repos spanning all 30 interests",
+          "items": [
+            { "text": "openai/whisper — speech recognition (music #1)", "url": "https://github.com/openai/whisper", "tag": "music" },
+            { "text": "facebookresearch/audiocraft — music generation (music #1)", "url": "https://github.com/facebookresearch/audiocraft", "tag": "music" },
+            { "text": "langchain-ai/langgraph — agentic workflows (creative #2)", "url": "https://github.com/langchain-ai/langgraph", "tag": "agents" },
+            { "text": "mrdoob/three.js — WebGL framework (creative #6)", "url": "https://github.com/mrdoob/three.js", "tag": "three" },
+            { "text": "facebookresearch/demucs — source separation (music #1)", "url": "https://github.com/facebookresearch/demucs", "tag": "music" },
+            { "text": "Stability-AI/generative-models — SVD + SDXL (creative #4)", "url": "https://github.com/Stability-AI/generative-models", "tag": "video" },
+            { "text": "gradio-app/gradio — the deploy tool (software #15)", "url": "https://github.com/gradio-app/gradio", "tag": "ship" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "groups",
+      "title": "Research Groups",
+      "icon": "🏛️",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Orgs whose APIs / SDKs you ship against",
+          "items": [
+            { "text": "Hugging Face — transformers, diffusers, datasets, Spaces", "url": "https://github.com/huggingface", "tag": "org" },
+            { "text": "OpenAI — Whisper, GPT, CLIP family, DALL·E", "url": "https://github.com/openai", "tag": "org" },
+            { "text": "Gradio — the deploy tool this directory is built around", "url": "https://github.com/gradio-app", "tag": "org" },
+            { "text": "Vercel — Next.js, serverless deploys, edge functions", "url": "https://github.com/vercel", "tag": "org" },
+            { "text": "Stripe — payments as an API", "url": "https://github.com/stripe", "tag": "org" },
+            { "text": "Supabase — Postgres + auth + storage, open-source Firebase", "url": "https://github.com/supabase", "tag": "org" }
+          ]
+        },
+        "musician": {
+          "tagline": "Orgs pushing music + audio AI forward",
+          "items": [
+            { "text": "Stability AI — generative models, video diffusion, audio", "url": "https://github.com/Stability-AI", "tag": "org" },
+            { "text": "Meta AI / FAIR — audiocraft, demucs, music understanding", "url": "https://github.com/facebookresearch", "tag": "org" },
+            { "text": "OpenAI — Whisper, GPT, CLIP family", "url": "https://github.com/openai", "tag": "org" },
+            { "text": "Hugging Face — transformers, diffusers, datasets, Spaces", "url": "https://github.com/huggingface", "tag": "org" },
+            { "text": "Suno — Bark TTS + Suno music generation", "url": "https://github.com/suno-ai", "tag": "org" },
+            { "text": "pyannote — production speaker diarization", "url": "https://github.com/pyannote", "tag": "org" },
+            { "text": "MyShell AI — MeloTTS multilingual TTS", "url": "https://github.com/myshell-ai", "tag": "org" },
+            { "text": "Gradio — the deploy tool this directory is built around", "url": "https://github.com/gradio-app", "tag": "org" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Orgs that publish arXiv-worthy work weekly",
+          "items": [
+            { "text": "Meta AI / FAIR — audio, vision, agents, multilingual", "url": "https://github.com/facebookresearch", "tag": "org" },
+            { "text": "OpenAI — frontier-model research, Whisper, CLIP", "url": "https://github.com/openai", "tag": "org" },
+            { "text": "Hugging Face — transformers + diffusers + datasets", "url": "https://github.com/huggingface", "tag": "org" },
+            { "text": "Stability AI — generative models, video diffusion", "url": "https://github.com/Stability-AI", "tag": "org" },
+            { "text": "Microsoft Research — TypeChat, autogen, guidance", "url": "https://github.com/microsoft", "tag": "org" },
+            { "text": "Google Research — Gemini, MusicLM, AudioPaLM, Parti", "url": "https://github.com/google-research", "tag": "org" },
+            { "text": "Apple — ml-stable-diffusion, ml-ferret, mlx", "url": "https://github.com/apple", "tag": "org" },
+            { "text": "DeepMind — alphafold, alphacode, muzero", "url": "https://github.com/google-deepmind", "tag": "org" }
+          ]
+        },
+        "creative": {
+          "tagline": "Orgs building the visual + audio-visual stack",
+          "items": [
+            { "text": "Stability AI — Stable Diffusion XL, SVD, Audio", "url": "https://github.com/Stability-AI", "tag": "org" },
+            { "text": "Hugging Face — diffusers, Spaces for image/video/audio", "url": "https://github.com/huggingface", "tag": "org" },
+            { "text": "Three.js — the WebGL framework maintainers (mrdoob et al)", "url": "https://github.com/mrdoob/three.js", "tag": "org" },
+            { "text": "pmndrs — drei, react-three-fiber, koestlich (UI on top of 3D)", "url": "https://github.com/pmndrs", "tag": "org" },
+            { "text": "Processing Foundation — p5.js", "url": "https://github.com/processing", "tag": "org" },
+            { "text": "Patricio Gonzalez Vivo — Lygia shader std lib", "url": "https://github.com/patriciogonzalezvivo", "tag": "org" }
+          ]
+        },
+        "director": {
+          "tagline": "The orgs you cite in a 1-page portfolio",
+          "items": [
+            { "text": "Stability AI — generative models, video diffusion, audio", "url": "https://github.com/Stability-AI", "tag": "org" },
+            { "text": "Meta AI / FAIR — audiocraft, demucs, music understanding", "url": "https://github.com/facebookresearch", "tag": "org" },
+            { "text": "OpenAI — Whisper, GPT, CLIP family", "url": "https://github.com/openai", "tag": "org" },
+            { "text": "Hugging Face — transformers, diffusers, datasets, Spaces", "url": "https://github.com/huggingface", "tag": "org" },
+            { "text": "Gradio — the deploy tool this directory is built around", "url": "https://github.com/gradio-app", "tag": "org" },
+            { "text": "LangChain — agent framework + LangGraph", "url": "https://github.com/langchain-ai", "tag": "org" },
+            { "text": "LlamaIndex — RAG + agent data framework", "url": "https://github.com/run-llama", "tag": "org" },
+            { "text": "Three.js — the WebGL framework maintainers", "url": "https://github.com/mrdoob/three.js", "tag": "org" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "agents",
+      "title": "Agent Frameworks",
+      "icon": "🤖",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Frameworks you can ship a multi-agent product on this week",
+          "items": [
+            { "text": "langgraph — Stateful, graph-based agent orchestration", "url": "https://github.com/langchain-ai/langgraph", "tag": "langgraph" },
+            { "text": "crewAI — Role-playing autonomous agent teams", "url": "https://github.com/crewAIInc/crewAI", "tag": "crewai" },
+            { "text": "llama_index — Data framework with agent + RAG primitives", "url": "https://github.com/run-llama/llama_index", "tag": "llamaindex" },
+            { "text": "autogen — Microsoft's multi-agent conversation framework", "url": "https://github.com/microsoft/autogen", "tag": "autogen" },
+            { "text": "smol-developer — Minimal agent dev harness, ~200 lines", "url": "https://github.com/smol-ai/developer", "tag": "smol" }
+          ]
+        },
+        "musician": {
+          "tagline": "Agentic workflows for music + audio production",
+          "items": [
+            { "text": "langgraph — Stateful, graph-based agent orchestration", "url": "https://github.com/langchain-ai/langgraph", "tag": "langgraph" },
+            { "text": "crewAI — Role-playing agent teams (e.g. transcriber + arranger + engraver)", "url": "https://github.com/crewAIInc/crewAI", "tag": "crewai" },
+            { "text": "autogen — Multi-agent conversation, useful for AMT pipelines", "url": "https://github.com/microsoft/autogen", "tag": "autogen" },
+            { "text": "MetaGPT — Multi-agent software-company simulation", "url": "https://github.com/geekan/MetaGPT", "tag": "metagpt" },
+            { "text": "llama_index — RAG for music-theory docs + scores", "url": "https://github.com/run-llama/llama_index", "tag": "llamaindex" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Frameworks with arXiv papers behind them",
+          "items": [
+            { "text": "autogen — Microsoft's multi-agent conversation (arXiv 2308.08155)", "url": "https://github.com/microsoft/autogen", "tag": "autogen" },
+            { "text": "langgraph — Graph-based orchestration companion paper", "url": "https://github.com/langchain-ai/langgraph", "tag": "langgraph" },
+            { "text": "MetaGPT — Multi-agent software-company simulation", "url": "https://github.com/geekan/MetaGPT", "tag": "metagpt" },
+            { "text": "AutoGPT — Original autonomous loop, now archived-but-referenced", "url": "https://github.com/Significant-Gravitas/AutoGPT", "tag": "autogpt" },
+            { "text": "crewAI — Role-playing autonomous agent teams", "url": "https://github.com/crewAIInc/crewAI", "tag": "crewai" },
+            { "text": "llama_index — Data framework with agent + RAG primitives", "url": "https://github.com/run-llama/llama_index", "tag": "llamaindex" },
+            { "text": "SuperAGI — Production agent infra + GUI", "url": "https://github.com/TransformerOptimus/SuperAGI", "tag": "superagi" }
+          ]
+        },
+        "creative": {
+          "tagline": "Agentic workflows for visual + generative production",
+          "items": [
+            { "text": "langgraph — Stateful, graph-based agent orchestration", "url": "https://github.com/langchain-ai/langgraph", "tag": "langgraph" },
+            { "text": "crewAI — Role-playing teams (sketcher → renderer → critic)", "url": "https://github.com/crewAIInc/crewAI", "tag": "crewai" },
+            { "text": "MetaGPT — Software-company simulation (good for art-pipeline agents)", "url": "https://github.com/geekan/MetaGPT", "tag": "metagpt" },
+            { "text": "autogen — Multi-agent conversation, useful for creative direction", "url": "https://github.com/microsoft/autogen", "tag": "autogen" },
+            { "text": "smol-developer — Minimal agent dev harness, ~200 lines", "url": "https://github.com/smol-ai/developer", "tag": "smol" }
+          ]
+        },
+        "director": {
+          "tagline": "The full agent stack — pick one, ship on Friday",
+          "items": [
+            { "text": "langgraph — Stateful, graph-based agent orchestration", "url": "https://github.com/langchain-ai/langgraph", "tag": "langgraph" },
+            { "text": "crewAI — Role-playing autonomous agent teams", "url": "https://github.com/crewAIInc/crewAI", "tag": "crewai" },
+            { "text": "MetaGPT — Multi-agent software-company simulation", "url": "https://github.com/geekan/MetaGPT", "tag": "metagpt" },
+            { "text": "AutoGPT — Original autonomous loop", "url": "https://github.com/Significant-Gravitas/AutoGPT", "tag": "autogpt" },
+            { "text": "smol-developer — Minimal agent dev harness, ~200 lines", "url": "https://github.com/smol-ai/developer", "tag": "smol" },
+            { "text": "SuperAGI — Production agent infra + GUI", "url": "https://github.com/TransformerOptimus/SuperAGI", "tag": "superagi" },
+            { "text": "autogen — Microsoft's multi-agent conversation framework", "url": "https://github.com/microsoft/autogen", "tag": "autogen" },
+            { "text": "llama_index — Data framework with agent + RAG primitives", "url": "https://github.com/run-llama/llama_index", "tag": "llamaindex" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "datasets",
+      "title": "Datasets",
+      "icon": "📦",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Datasets to fine-tune a deployable product on",
+          "items": [
+            { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
+            { "text": "mozilla-foundation/common_voice_17_0 — Multilingual crowdsourced speech (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" },
+            { "text": "mteb/mteb — Massive Text Embedding Benchmark dataset hub", "url": "https://huggingface.co/datasets/mteb/mteb", "tag": "nlp" },
+            { "text": "argilla/distilabel-intel-orca-dpo-pairs — DPO training data", "url": "https://huggingface.co/datasets/argilla/distilabel-intel-orca-dpo-pairs", "tag": "rlhf" }
+          ]
+        },
+        "musician": {
+          "tagline": "Open training + eval corpora for music + audio ML",
+          "items": [
+            { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs for captioning", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
+            { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
+            { "text": "SEACrowd/sea_bench — Multilingual Southeast-Asian NLG", "url": "https://huggingface.co/datasets/SEACrowd/sea_bench", "tag": "multilingual" },
+            { "text": "musicnet/musicnet — 330h classical chamber recordings (gated; request access on HF)", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" },
+            { "text": "mozilla-foundation/common_voice_17_0 — Multilingual crowdsourced corpus (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Datasets paired with eval benchmarks (the rigorous lens)",
+          "items": [
+            { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs (captioning eval)", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
+            { "text": "openslr/librispeech_asr — 1000h + clean/test splits for ASR eval", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
+            { "text": "musicnet/musicnet — 330h classical + label CSV for AMT eval", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" },
+            { "text": "SEACrowd/sea_bench — Multilingual Southeast-Asian NLG eval", "url": "https://huggingface.co/datasets/SEACrowd/sea_bench", "tag": "multilingual" },
+            { "text": "mozilla-foundation/common_voice_17_0 — Multilingual ASR eval (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" }
+          ]
+        },
+        "creative": {
+          "tagline": "Datasets for image / video / audio-visual training",
+          "items": [
+            { "text": "laion/laion2b-en — 2B image-text pairs (the open CLIP training corpus)", "url": "https://huggingface.co/datasets/laion/laion2b-en", "tag": "image" },
+            { "text": "kakaobrain/karlo-v1-alpha — Conceptual captions + art", "url": "https://huggingface.co/datasets/kakaobrain/karlo-v1-alpha", "tag": "image" },
+            { "text": "stabilityai/stable-audio-open-1M — 1M audio-caption pairs for SFX generation", "url": "https://huggingface.co/datasets/stabilityai/stable-audio-open-1M", "tag": "audio" },
+            { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs (audio ↔ text)", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "audio" }
+          ]
+        },
+        "director": {
+          "tagline": "Datasets spanning audio, music, vision, language",
+          "items": [
+            { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs for captioning", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
+            { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
+            { "text": "laion/laion2b-en — 2B image-text pairs (the open CLIP corpus)", "url": "https://huggingface.co/datasets/laion/laion2b-en", "tag": "image" },
+            { "text": "stabilityai/stable-audio-open-1M — 1M audio-caption pairs", "url": "https://huggingface.co/datasets/stabilityai/stable-audio-open-1M", "tag": "audio" },
+            { "text": "musicnet/musicnet — 330h classical chamber recordings (gated)", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "benchmarks",
+      "title": "Benchmarks",
+      "icon": "📏",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Eval suites you can plug into a deployable product",
+          "items": [
+            { "text": "lmsys/lmsys-chat-1m — Real LLM conversation traces, for chat-product eval", "url": "https://huggingface.co/datasets/lmsys/lmsys-chat-1m", "tag": "eval" },
+            { "text": "sigsep/bsseval — Source-separation eval (BSDR / SIR / SAR)", "url": "https://github.com/sigsep/bsseval", "tag": "separation" },
+            { "text": "mir-dataset-loaders/mir_datasets — Unified loader for 50+ MIR datasets", "url": "https://github.com/mir-dataset-loaders/mir_datasets", "tag": "loader" }
+          ]
+        },
+        "musician": {
+          "tagline": "Standardized eval sets for audio + music ML",
+          "items": [
+            { "text": "sigsep/bsseval — Source-separation eval (BSDR / SIR / SAR)", "url": "https://github.com/sigsep/bsseval", "tag": "separation" },
+            { "text": "sigsep/sigsep-mus-eval — musdb18 evaluation harness", "url": "https://github.com/sigsep/sigsep-mus-eval", "tag": "separation" },
+            { "text": "mir-dataset-loaders/mir_datasets — Unified loader for 50+ MIR datasets", "url": "https://github.com/mir-dataset-loaders/mir_datasets", "tag": "loader" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Rigor: reproducible, citable, leaderboard-grade eval",
+          "items": [
+            { "text": "sigsep/bsseval — Source-separation eval (BSDR / SIR / SAR)", "url": "https://github.com/sigsep/bsseval", "tag": "separation" },
+            { "text": "sigsep/sigsep-mus-eval — musdb18 evaluation harness", "url": "https://github.com/sigsep/sigsep-mus-eval", "tag": "separation" },
+            { "text": "mir-dataset-loaders/mir_datasets — Unified loader for 50+ MIR datasets", "url": "https://github.com/mir-dataset-loaders/mir_datasets", "tag": "loader" },
+            { "text": "EleutherAI/lm-evaluation-harness — Standard LM eval suite", "url": "https://github.com/EleutherAI/lm-evaluation-harness", "tag": "lm" }
+          ]
+        },
+        "creative": {
+          "tagline": "Eval suites for image / video / generative quality",
+          "items": [
+            { "text": "mlfoundations/clip_benchmark — CLIP eval across 35+ datasets", "url": "https://github.com/mlfoundations/clip_benchmark", "tag": "vision" },
+            { "text": "stability-ai/stability-sdk — Stability AI eval helpers", "url": "https://github.com/Stability-AI", "tag": "gen" }
+          ]
+        },
+        "director": {
+          "tagline": "Cross-domain eval — audio, music, language, vision",
+          "items": [
+            { "text": "sigsep/bsseval — Source-separation eval (BSDR / SIR / SAR)", "url": "https://github.com/sigsep/bsseval", "tag": "separation" },
+            { "text": "sigsep/sigsep-mus-eval — musdb18 evaluation harness", "url": "https://github.com/sigsep/sigsep-mus-eval", "tag": "separation" },
+            { "text": "mir-dataset-loaders/mir_datasets — Unified loader for 50+ MIR datasets", "url": "https://github.com/mir-dataset-loaders/mir_datasets", "tag": "loader" },
+            { "text": "EleutherAI/lm-evaluation-harness — Standard LM eval suite", "url": "https://github.com/EleutherAI/lm-evaluation-harness", "tag": "lm" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "tutorials",
+      "title": "Tutorials",
+      "icon": "📘",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Tutorials that end in a deployable product",
+          "items": [
+            { "text": "Gradio Quickstart — your first app in 5 minutes", "url": "https://gradio.app/guides/quickstart", "tag": "gradio" },
+            { "text": "Sharing your Gradio app on Hugging Face Spaces", "url": "https://gradio.app/guides/sharing-your-app", "tag": "gradio" },
+            { "text": "Hugging Face Spaces — full deployment reference", "url": "https://huggingface.co/docs/hub/spaces", "tag": "hf" },
+            { "text": "Vercel — Deploy a Next.js app in 60 seconds", "url": "https://vercel.com/docs/getting-started-with-vercel", "tag": "web" }
+          ]
+        },
+        "musician": {
+          "tagline": "Hand-curated docs for music + audio AI",
+          "items": [
+            { "text": "Gradio Quickstart — your first app in 5 minutes", "url": "https://gradio.app/guides/quickstart", "tag": "gradio" },
+            { "text": "Sharing your Gradio app on Hugging Face Spaces", "url": "https://gradio.app/guides/sharing-your-app", "tag": "gradio" },
+            { "text": "Hugging Face Spaces — full deployment reference", "url": "https://huggingface.co/docs/hub/spaces", "tag": "hf" },
+            { "text": "Transformers docs — every model class, every task", "url": "https://huggingface.co/docs/transformers/index", "tag": "hf" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Reference docs that read like papers",
+          "items": [
+            { "text": "Transformers docs — every model class, every task", "url": "https://huggingface.co/docs/transformers/index", "tag": "hf" },
+            { "text": "Diffusers docs — diffusion models, schedulers, pipelines", "url": "https://huggingface.co/docs/diffusers/index", "tag": "hf" },
+            { "text": "Hugging Face Spaces — full deployment reference", "url": "https://huggingface.co/docs/hub/spaces", "tag": "hf" },
+            { "text": "Gradio — Guides (full list)", "url": "https://gradio.app/guides/", "tag": "gradio" }
+          ]
+        },
+        "creative": {
+          "tagline": "Tutorials for the visual stack",
+          "items": [
+            { "text": "Three.js — getting started", "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene", "tag": "three" },
+            { "text": "p5.js — getting started", "url": "https://p5js.org/get-started/", "tag": "p5" },
+            { "text": "The Book of Shaders — Patricio Gonzalez Vivo", "url": "https://thebookofshaders.com/", "tag": "shader" },
+            { "text": "Lygia — shader std lib documentation", "url": "https://lygia.xyz/", "tag": "shader" }
+          ]
+        },
+        "director": {
+          "tagline": "The full self-taught curriculum in 1 page",
+          "items": [
+            { "text": "Gradio Quickstart — your first app in 5 minutes", "url": "https://gradio.app/guides/quickstart", "tag": "gradio" },
+            { "text": "Sharing your Gradio app on Hugging Face Spaces", "url": "https://gradio.app/guides/sharing-your-app", "tag": "gradio" },
+            { "text": "Hugging Face Spaces — full deployment reference", "url": "https://huggingface.co/docs/hub/spaces", "tag": "hf" },
+            { "text": "Transformers docs — every model class, every task", "url": "https://huggingface.co/docs/transformers/index", "tag": "hf" },
+            { "text": "Three.js — getting started", "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene", "tag": "three" },
+            { "text": "The Book of Shaders — Patricio Gonzalez Vivo", "url": "https://thebookofshaders.com/", "tag": "shader" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "videos",
+      "title": "Videos",
+      "icon": "🎥",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Channels for the indie-hacker / solo-founder mode",
+          "items": [
+            { "text": "Indie Hackers — founder interviews + build-in-public", "url": "https://www.youtube.com/@indiehackers", "tag": "indie" },
+            { "text": "YC — Startup School talks", "url": "https://www.youtube.com/@ycombinator", "tag": "yc" },
+            { "text": "Fireship — short, sharp tech overviews", "url": "https://www.youtube.com/@Fireship", "tag": "tech" },
+            { "text": "Two Minute Papers — concise AI research highlights", "url": "https://www.youtube.com/@TwoMinutePapers", "tag": "research" }
+          ]
+        },
+        "musician": {
+          "tagline": "Channels for jazz, trumpet, music AI, transcription",
+          "items": [
+            { "text": "Open Studio Network — jazz education (Adam Maness, etc.)", "url": "https://www.youtube.com/@openstudionetwork", "tag": "jazz" },
+            { "text": "Trombone Shorter — jazz transcription channel", "url": "https://www.youtube.com/@thejazztranscriber", "tag": "jazz" },
+            { "text": "Valery Vaskovsky — jazz transcription master", "url": "https://www.youtube.com/@valeryvaskovsky", "tag": "jazz" },
+            { "text": "Adam Neely — music theory + jazz + bass", "url": "https://www.youtube.com/@AdamNeely", "tag": "theory" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Channels I keep coming back to",
+          "items": [
+            { "text": "3Blue1Brown — Visual math (transformers, diffusion, manifolds)", "url": "https://www.youtube.com/@3blue1brown", "tag": "math" },
+            { "text": "Two Minute Papers — Concise AI research highlights", "url": "https://www.youtube.com/@TwoMinutePapers", "tag": "research" },
+            { "text": "Stanford Online — Full ML, NLP, RL courses (free)", "url": "https://www.youtube.com/@stanfordonline", "tag": "courses" }
+          ]
+        },
+        "creative": {
+          "tagline": "Channels for shaders, generative art, motion design",
+          "items": [
+            { "text": "The Coding Train — Daniel Shiffman, p5.js + creative coding", "url": "https://www.youtube.com/@TheCodingTrain", "tag": "creative" },
+            { "text": "Inigo Quilez — shader + math + 3D", "url": "https://www.youtube.com/@inigoquilez", "tag": "shader" },
+            { "text": "Kishimoto — GLSL + 3D motion", "url": "https://www.youtube.com/@akella_kishimoto", "tag": "shader" },
+            { "text": "Displaced — procedural generation in Unity", "url": "https://www.youtube.com/@displacedgames", "tag": "proc" }
+          ]
+        },
+        "director": {
+          "tagline": "The 5 channels that survived every algorithm change",
+          "items": [
+            { "text": "3Blue1Brown — Visual math (transformers, diffusion, manifolds)", "url": "https://www.youtube.com/@3blue1brown", "tag": "math" },
+            { "text": "Two Minute Papers — Concise AI research highlights", "url": "https://www.youtube.com/@TwoMinutePapers", "tag": "research" },
+            { "text": "The Coding Train — Daniel Shiffman, p5.js + creative coding", "url": "https://www.youtube.com/@TheCodingTrain", "tag": "creative" },
+            { "text": "Open Studio Network — jazz education", "url": "https://www.youtube.com/@openstudionetwork", "tag": "jazz" },
+            { "text": "Stanford Online — Full ML, NLP, RL courses (free)", "url": "https://www.youtube.com/@stanfordonline", "tag": "courses" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "projects",
+      "title": "Your Own Projects",
+      "icon": "🧪",
+      "kind": "links",
+      "versions": {
+        "builder": {
+          "tagline": "Your shipped work — the build-in-public portfolio",
+          "items": [
+            { "text": "kajica2 — GitHub profile (28 non-fork repos)", "url": "https://github.com/kajica2", "tag": "profile" },
+            { "text": "music-transcription-monitor — Agentic AMT dashboard (the reference site)", "url": "https://kajica2.github.io/music-transcription-monitor/", "tag": "live" },
+            { "text": "music-transcription-monitor/tester.html — Working browser pitch detector", "url": "https://kajica2.github.io/music-transcription-monitor/tester.html", "tag": "live" },
+            { "text": "gradio-pipeline-directory — This site (companion repo)", "url": "https://github.com/kajica2/gradio-pipeline-directory", "tag": "src" }
+          ]
+        },
+        "musician": {
+          "tagline": "Music + audio projects you've shipped",
+          "items": [
+            { "text": "music-transcription-monitor — Agentic AMT dashboard (the reference site)", "url": "https://kajica2.github.io/music-transcription-monitor/", "tag": "live" },
+            { "text": "music-transcription-monitor/tester.html — Working browser pitch detector", "url": "https://kajica2.github.io/music-transcription-monitor/tester.html", "tag": "live" },
+            { "text": "music-transcription-monitor — Source repo", "url": "https://github.com/kajica2/music-transcription-monitor", "tag": "src" },
+            { "text": "harmonic-study-engine — Music theory practice tooling", "url": "https://github.com/kajica2/harmonic-study-engine", "tag": "music" },
+            { "text": "Jazzability — Jazz education app", "url": "https://github.com/kajica2/Jazzability", "tag": "music" },
+            { "text": "soloscrub — Audio cleanup pipeline", "url": "https://github.com/kajica2/soloscrub", "tag": "audio" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Projects that have a paper or eval write-up attached",
+          "items": [
+            { "text": "music-transcription-monitor — Agentic AMT dashboard (the reference site)", "url": "https://kajica2.github.io/music-transcription-monitor/", "tag": "live" },
+            { "text": "music-transcription-monitor/tester.html — Working browser pitch detector", "url": "https://kajica2.github.io/music-transcription-monitor/tester.html", "tag": "live" },
+            { "text": "music-transcription-monitor — Source repo", "url": "https://github.com/kajica2/music-transcription-monitor", "tag": "src" }
+          ]
+        },
+        "creative": {
+          "tagline": "Visual + generative + interactive work",
+          "items": [
+            { "text": "kajica2 — GitHub profile (28 non-fork repos)", "url": "https://github.com/kajica2", "tag": "profile" },
+            { "text": "evolving-art — Generative art experiments", "url": "https://github.com/kajica2/evolving-art", "tag": "art" },
+            { "text": "shader-arsenal — GLSL shader collection", "url": "https://github.com/kajica2/shader-arsenal", "tag": "art" }
+          ]
+        },
+        "director": {
+          "tagline": "Things I've shipped on GitHub",
+          "items": [
+            { "text": "kajica2 — GitHub profile (28 non-fork repos)", "url": "https://github.com/kajica2", "tag": "profile" },
+            { "text": "music-transcription-monitor — Agentic AMT dashboard (the reference site)", "url": "https://kajica2.github.io/music-transcription-monitor/", "tag": "live" },
+            { "text": "music-transcription-monitor/tester.html — Working browser pitch detector", "url": "https://kajica2.github.io/music-transcription-monitor/tester.html", "tag": "live" },
+            { "text": "music-transcription-monitor — Source repo", "url": "https://github.com/kajica2/music-transcription-monitor", "tag": "src" },
+            { "text": "gradio-pipeline-directory — This site (companion repo)", "url": "https://github.com/kajica2/gradio-pipeline-directory", "tag": "src" },
+            { "text": "evolving-art — Generative art experiments", "url": "https://github.com/kajica2/evolving-art", "tag": "art" },
+            { "text": "harmonic-study-engine — Music theory practice tooling", "url": "https://github.com/kajica2/harmonic-study-engine", "tag": "music" },
+            { "text": "Jazzability — Jazz education app", "url": "https://github.com/kajica2/Jazzability", "tag": "music" },
+            { "text": "soloscrub — Audio cleanup pipeline", "url": "https://github.com/kajica2/soloscrub", "tag": "audio" },
+            { "text": "shader-arsenal — GLSL shader collection", "url": "https://github.com/kajica2/shader-arsenal", "tag": "art" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ideas",
+      "title": "Ideas Inbox",
+      "icon": "💡",
+      "kind": "ideas",
+      "versions": {
+        "builder": {
+          "tagline": "Product-ization ideas — things you could ship",
+          "items": [
+            { "text": "A nightly cron that pulls the top 20 trending audio-ML repos and updates featured.json automatically", "tag": "automation" },
+            { "text": "A second deploy button on each card: 'deploy with GPU' that adds a hardware flag for the Space SDK", "tag": "feature" },
+            { "text": "An MCP server that exposes the directory's API to agents — let other agents discover + deploy Gradio tools", "tag": "agent" },
+            { "text": "Stripe link → $5/mo → early access to private curated tools + monthly new-tools digest", "tag": "monetize" }
+          ]
+        },
+        "musician": {
+          "tagline": "Music + audio ideas — chase when there's time",
+          "items": [
+            { "text": "Combine MuScriptor (audio→MusicXML) with this directory's deploy command — one Space that transcribes + renders the score", "tag": "build" },
+            { "text": "Browser-side ACF2+ pitch detection that mirrors music-transcription-monitor/tester.html, but streams to a Gradio Whisper Space", "tag": "build" },
+            { "text": "Real-time trumpet practice tool: mic in → pitch detection → compare to a target lick → highlight off-notes on a piano roll", "tag": "practice" },
+            { "text": "Jazz-lick library: 100 heads, 100 solos, searchable by chord changes + key + feel", "tag": "library" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Research-arc ideas — papers you might write",
+          "items": [
+            { "text": "A/B test: ACF2+ (browser) vs Basic Pitch vs MuScriptor on the same MusicNet clips — write up where each fails", "tag": "repro" },
+            { "text": "A 10K-sample test: how does Demucs quality degrade as the recording gets noisier? 1-page arXiv-ready write-up", "tag": "bench" },
+            { "text": "A tool that does mechanistic interpretability for AMT — which attention heads are tracking pitch vs rhythm vs timbre", "tag": "interp" }
+          ]
+        },
+        "creative": {
+          "tagline": "Art + code ideas — sketches waiting to happen",
+          "items": [
+            { "text": "Generative trumpet-bell poster series: parametric shapes driven by an AudioCraft prompt → POD store", "tag": "art" },
+            { "text": "GLSL shader that visualizes a MIDI file in real time — record + publish as a music video", "tag": "shader" },
+            { "text": "Three.js jazz-club: a low-poly recreation of the Village Vanguard, lit by a single swing-arm lamp", "tag": "three" },
+            { "text": "p5.js + MediaPipe: webcam → A4-printable silhouette of the user, frame-perfect", "tag": "vision" }
+          ]
+        },
+        "director": {
+          "tagline": "Cross-discipline ideas — one per theme cluster",
+          "items": [
+            { "text": "Combine MuScriptor (audio→MusicXML) with this directory's deploy command — one Space that transcribes + renders the score", "tag": "build" },
+            { "text": "A nightly cron that pulls the top 20 trending audio-ML repos and updates featured.json automatically", "tag": "automation" },
+            { "text": "A second deploy button on each card: 'deploy with GPU' that adds a hardware flag for the Space SDK", "tag": "feature" },
+            { "text": "Browser-side ACF2+ pitch detection that mirrors the music-transcription-monitor/tester.html, but streams to a Gradio Whisper Space", "tag": "build" },
+            { "text": "An MCP server that exposes the directory's API to agents — let other agents discover + deploy Gradio tools", "tag": "agent" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "checklist",
+      "title": "Checklist",
+      "icon": "✅",
+      "kind": "checklist",
+      "versions": {
+        "builder": {
+          "tagline": "Pre-deploy + post-deploy sanity checks",
+          "items": [
+            { "text": "GitHub repo: settings → Pages → Source: main / root", "done": true, "tag": "deploy" },
+            { "text": "All GitHub URLs in featured.json return 200 (verified Aug 12)", "done": true, "tag": "audit" },
+            { "text": "All HF Space URLs either return 200 or are nulled out", "done": true, "tag": "audit" },
+            { "text": "Puppeteer e2e test runs green against the deployed URL", "done": false, "tag": "verify" },
+            { "text": "Submit-tool button → GitHub issue template exists in .github/ISSUE_TEMPLATE/", "done": false, "tag": "curate" },
+            { "text": "Site renders on mobile (≤620px breakpoint) — test in Chrome devtools", "done": false, "tag": "responsive" },
+            { "text": "Lighthouse: Performance ≥ 90, Accessibility ≥ 90, SEO ≥ 90", "done": false, "tag": "perf" },
+            { "text": "Add a custom CNAME if you want a non-github.io URL", "done": false, "tag": "deploy" }
+          ]
+        },
+        "musician": {
+          "tagline": "Pre-recording + post-recording sanity checks",
+          "items": [
+            { "text": "Tune the horn (concert A = 440Hz) before every recording session", "done": true, "tag": "setup" },
+            { "text": "Use a pop filter on the mic for any sustained note (reduces plosive artifacts)", "done": true, "tag": "setup" },
+            { "text": "Record 30+ seconds of silence for noise profiling before each take", "done": true, "tag": "setup" },
+            { "text": "Tag every take with the mouthpiece, horn, room, and time of day", "done": false, "tag": "log" },
+            { "text": "Back up recordings to two different cloud providers weekly", "done": true, "tag": "backup" },
+            { "text": "Run Basic Pitch on a known reference clip monthly — sanity-check the toolchain", "done": false, "tag": "verify" }
+          ]
+        },
+        "researcher": {
+          "tagline": "Pre-paper + post-paper sanity checks",
+          "items": [
+            { "text": "Read the paper end-to-end before citing it (not just the abstract)", "done": true, "tag": "read" },
+            { "text": "Re-run the paper's main result on a small subset before trusting the conclusion", "done": false, "tag": "repro" },
+            { "text": "Tag every claim with [verified] or [as-stated] in your notes", "done": false, "tag": "log" },
+            { "text": "Save the PDF to a per-paper folder with a 1-line summary file", "done": true, "tag": "log" },
+            { "text": "Back up the citation graph (BibTeX + notes) to git, weekly", "done": true, "tag": "backup" }
+          ]
+        },
+        "creative": {
+          "tagline": "Pre-sketch + post-sketch sanity checks",
+          "items": [
+            { "text": "Take a reference photo before any generative art session (texture, color, light)", "done": true, "tag": "input" },
+            { "text": "Save every shader iteration (numbered, dated, with 1-line description)", "done": true, "tag": "log" },
+            { "text": "Render at 1080p minimum before sharing — anything lower gets a 'draft' label", "done": true, "tag": "output" },
+            { "text": "Back up the sketchbook (zips + gifs) to two cloud providers weekly", "done": true, "tag": "backup" },
+            { "text": "Post one finished piece to the r/glsl weekly thread, every week", "done": false, "tag": "share" }
+          ]
+        },
+        "director": {
+          "tagline": "The pre-ship + post-ship sanity checks",
+          "items": [
+            { "text": "All GitHub URLs in featured.json return 200 (verified Aug 12)", "done": true, "tag": "audit" },
+            { "text": "All HF Space URLs either return 200 or are nulled out", "done": true, "tag": "audit" },
+            { "text": "5 hub versions × 12 sections all load (no missing tagline, no broken item)", "done": true, "tag": "audit" },
+            { "text": "Puppeteer e2e test runs green against the deployed URL", "done": false, "tag": "verify" },
+            { "text": "Submit-tool button → GitHub issue template exists in .github/ISSUE_TEMPLATE/", "done": false, "tag": "curate" },
+            { "text": "Site renders on mobile (≤620px breakpoint) — test in Chrome devtools", "done": false, "tag": "responsive" },
+            { "text": "Lighthouse: Performance ≥ 90, Accessibility ≥ 90, SEO ≥ 90", "done": false, "tag": "perf" },
+            { "text": "Add a custom CNAME if you want a non-github.io URL", "done": false, "tag": "deploy" }
+          ]
+        }
+      }
+    }
+  ]
+}

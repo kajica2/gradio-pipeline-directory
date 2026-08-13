@@ -1,0 +1,22 @@
+{
+  "_comment": "Categories are rendered in the left sidebar. Each id is matched against the tool's `category` field. The 'match' property controls OR vs AND matching (currently OR is supported). Add or remove freely — the directory auto-rebuilds.",
+  "categories": [
+    { "id": "audio-transcription", "label": "Audio Transcription", "icon": "🎙️", "color": "#7dd3c0" },
+    { "id": "text-to-speech",      "label": "Text-to-Speech",      "icon": "🗣️", "color": "#60a5fa" },
+    { "id": "music-generation",    "label": "Music Generation",     "icon": "🎵", "color": "#c084fc" },
+    { "id": "voice-cloning",       "label": "Voice Cloning",        "icon": "🎤", "color": "#f472b6" },
+    { "id": "video-generation",    "label": "Video Generation",     "icon": "🎬", "color": "#fb923c" },
+    { "id": "speech-recognition",  "label": "Speech Recognition",   "icon": "📝", "color": "#34d399" },
+    { "id": "audio-separation",    "label": "Source Separation",    "icon": "🎚️", "color": "#facc15" },
+    { "id": "speech-enhancement",  "label": "Speech Enhancement",   "icon": "✨", "color": "#818cf8" },
+    { "id": "image-generation",    "label": "Image Generation",     "icon": "🖼️", "color": "#a78bfa" },
+    { "id": "llm-chat",            "label": "LLM & Chat",           "icon": "💬", "color": "#22d3ee" },
+    { "id": "demos-and-examples",  "label": "Demos & Examples",     "icon": "🧪", "color": "#94a3b8" }
+  ],
+  "sortOptions": [
+    { "id": "stars",    "label": "Most stars" },
+    { "id": "updated",  "label": "Recently updated" },
+    { "id": "name",     "label": "Name (A–Z)" },
+    { "id": "category", "label": "Category" }
+  ]
+}
