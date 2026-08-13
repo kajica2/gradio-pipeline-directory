@@ -43,6 +43,35 @@
             <a class="nav__link" href="index.html#hub">Hub</a>
             <a class="nav__link" href="tester.html">Tester</a>
           </nav>
+
+          <!-- HF token pill: collapsed = "HF" button, expanded = token input -->
+          <div class="hf-pill" id="hf-pill">
+            <button id="hf-pill-toggle" class="hf-pill__toggle" type="button" aria-label="Set your Hugging Face token" title="Set your Hugging Face token to deploy from the browser">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/>
+              </svg>
+              <span id="hf-pill-label">HF</span>
+            </button>
+            <div class="hf-pill__panel" id="hf-pill-panel" hidden>
+              <p class="hf-pill__title">Hugging Face token</p>
+              <p class="hf-pill__hint">Stored in localStorage. Never sent anywhere except <code>huggingface.co</code>.</p>
+              <input type="password" id="hf-token-input" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" />
+              <div class="hf-pill__row">
+                <button id="hf-token-save" class="btn btn--primary" type="button">Save</button>
+                <button id="hf-token-clear" class="btn" type="button" hidden>Clear</button>
+                <a class="hf-pill__link" href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">Get a token →</a>
+              </div>
+              <p class="hf-pill__status" id="hf-token-status" role="status"></p>
+            </div>
+          </div>
+
+          <button id="deploy-model-btn" class="hf-pill__toggle hf-pill__toggle--accent" type="button" title="Deploy any HF model as a Gradio Space">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Deploy model
+          </button>
+
           <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle color theme">
             <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -67,16 +96,17 @@
     <section class="hero" aria-labelledby="hero-title">
       <p class="section-eyebrow">Open source · Free · Zero config</p>
       <h2 id="hero-title" class="hero__title">Ship any Gradio pipeline to a HF Space in 60 seconds.</h2>
-      <p class="hero__sub">Browse 12 verified open-source audio &amp; video tools. Copy one command. Paste your Hugging Face token. No Python, no cloning, no GPU setup.</p>
+      <p class="hero__sub">Browse 12 verified open-source audio &amp; video tools. Paste your Hugging Face token in the header. Click <strong>Deploy</strong> on any card to ship a new Space — no Python, no cloning, no GPU setup.</p>
       <div class="hero__ctas">
         <a class="btn btn--primary" href="#directory">Browse the directory</a>
-        <a class="btn" href="tester.html">Test a deployed Space</a>
+        <button class="btn" id="hero-deploy-model" type="button">Deploy any model</button>
+        <a class="btn btn--ghost" href="tester.html">Test a deployed Space</a>
         <a class="btn btn--ghost" href="#hub">Open the Hub</a>
       </div>
       <ul class="hero__signals" aria-label="Trust signals">
         <li><strong>12</strong> curated, deployable tools</li>
+        <li><strong>1-click</strong> deploy from the browser</li>
         <li><strong>100%</strong> free — no payment, no signup</li>
-        <li><strong>~60s</strong> from copy to live Space</li>
         <li><strong>0</strong> local dependencies</li>
       </ul>
     </section>
@@ -194,9 +224,55 @@
     </div>
   </div>
 
+  <!-- Deploy-a-model modal -->
+  <div class="modal-backdrop" id="model-modal" role="dialog" aria-modal="true" aria-labelledby="model-modal-title" hidden>
+    <div class="modal">
+      <div class="modal__head">
+        <h3 class="modal__title" id="model-modal-title">Deploy any HF model as a Gradio Space</h3>
+        <button class="modal__close" id="model-modal-close" type="button" aria-label="Close dialog">×</button>
+      </div>
+      <div class="modal__body">
+        <div class="modal__section">
+          <p style="margin: 0 0 12px; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.6;">
+            Paste any Hugging Face model ID. We'll generate a Gradio <code>app.py</code> that loads the model and serve it as a new Space under your account.
+            First time? <a href="#hf-pill-toggle" id="model-modal-token-link">Set your HF token</a> in the header.
+          </p>
+          <div class="deploy-form">
+            <label for="model-id-input" class="deploy-form__label">Model ID</label>
+            <input id="model-id-input" type="text" placeholder="stabilityai/stable-diffusion-xl-base-1.0" autocomplete="off" spellcheck="false" />
+            <p class="deploy-form__hint" id="model-id-suggestions">Try: <a href="#" data-mid="stabilityai/stable-diffusion-xl-base-1.0">SDXL</a> · <a href="#" data-mid="meta-llama/Meta-Llama-3-8B-Instruct">Llama-3 8B</a> · <a href="#" data-mid="mistralai/Mistral-7B-Instruct-v0.3">Mistral 7B</a> · <a href="#" data-mid="openai/whisper-large-v3">Whisper Large v3</a> · <a href="#" data-mid="facebook/detr-resnet-50">DETR ResNet-50</a></p>
+            <label for="model-space-name" class="deploy-form__label">New Space name</label>
+            <input id="model-space-name" type="text" placeholder="my-sdxl-space" autocomplete="off" />
+            <div class="deploy-form__row">
+              <label for="model-hardware" class="deploy-form__label">Hardware</label>
+              <select id="model-hardware">
+                <option value="cpu-basic" selected>CPU basic · free</option>
+                <option value="t4-small">T4 small · free (image / small LLM)</option>
+                <option value="t4-medium">T4 medium · ~$0.60/hr</option>
+                <option value="a10g-small">A10G small · ~$1.05/hr</option>
+                <option value="a100-large">A100 large · ~$4.50/hr</option>
+              </select>
+              <label class="deploy-form__check">
+                <input type="checkbox" id="model-private" />
+                <span>Private</span>
+              </label>
+            </div>
+            <button id="model-deploy-btn" class="btn btn--primary" type="button">Deploy to my HF</button>
+          </div>
+        </div>
+        <div class="modal__section" id="model-progress" hidden>
+          <h3>Progress</h3>
+          <div class="progress-log" id="model-progress-log" role="log" aria-live="polite"></div>
+          <p class="deploy-form__result" id="model-progress-result" hidden></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast (hidden by default) -->
   <div class="toast" id="toast" hidden></div>
 
+  <script src="shared/hf-deploy.js"></script>
   <script src="shared/app.js"></script>
 </body>
 </html>

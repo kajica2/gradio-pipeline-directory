@@ -1630,3 +1630,234 @@ code, pre {
   background: var(--surface-2);
   border: 1px solid var(--border);
 }
+
+/* =================================================================
+   HF token pill (header)
+   ================================================================= */
+.hf-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.hf-pill__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+.hf-pill__toggle:hover { background: var(--surface-hover, var(--surface-2)); color: var(--text); border-color: var(--border-strong); }
+.hf-pill__toggle--accent {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+.hf-pill__toggle--accent:hover { background: var(--accent); color: var(--text-inverse); }
+.hf-pill--ready .hf-pill__toggle { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-fg); }
+.hf-pill__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  width: 320px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+}
+.hf-pill__title {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+.hf-pill__hint {
+  margin: 0 0 10px;
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+.hf-pill__hint code {
+  background: var(--code-bg);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+.hf-pill__panel input[type="password"] {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--code-bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  margin-bottom: 8px;
+}
+.hf-pill__panel input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.hf-pill__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.hf-pill__row .btn { padding: 5px 10px; font-size: var(--fs-xs); }
+.hf-pill__link {
+  margin-left: auto;
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  text-decoration: none;
+}
+.hf-pill__link:hover { text-decoration: underline; }
+.hf-pill__status {
+  margin: 8px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  min-height: 14px;
+}
+.hf-pill__status--ok { color: var(--status-ok-fg); }
+.hf-pill__status--err { color: var(--status-err-fg); }
+
+/* =================================================================
+   Deploy form (in modal)
+   ================================================================= */
+.modal__section--deploy {
+  border-top: 1px dashed var(--border);
+  padding-top: 16px;
+}
+.deploy-section__sub {
+  margin: 0 0 12px;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+.deploy-section__sub strong { color: var(--accent); }
+.deploy-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deploy-form__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+.deploy-form input[type="text"],
+.deploy-form input[type="password"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--code-bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.deploy-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.deploy-form select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--code-bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  flex: 1;
+}
+.deploy-form__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.deploy-form__row .deploy-form__label { margin-top: 0; }
+.deploy-form__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+.deploy-form__hint {
+  margin: -4px 0 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+  line-height: 1.5;
+}
+.deploy-form__hint a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent-border);
+  margin-right: 2px;
+}
+.deploy-form__hint a:hover { border-bottom-style: solid; }
+.deploy-form .btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.deploy-form__result {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.deploy-form__result--ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok-fg);
+  border: 1px solid var(--status-ok-fg);
+}
+.deploy-form__result--err {
+  background: var(--status-err-bg);
+  color: var(--status-err-fg);
+  border: 1px solid var(--status-err-fg);
+}
+.deploy-form__result a { color: inherit; text-decoration: underline; }
+
+/* =================================================================
+   Progress log
+   ================================================================= */
+.progress-log {
+  margin-top: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+.progress-log__line {
+  padding: 1px 0;
+  border-left: 2px solid transparent;
+  padding-left: 6px;
+}
+.progress-log__line:hover { background: rgba(255,255,255,0.02); }
+
+/* =================================================================
+   Small screens
+   ================================================================= */
+@media (max-width: 720px) {
+  .hf-pill__panel { width: 280px; right: -40px; }
+  .deploy-form__row { flex-direction: column; align-items: stretch; }
+  .deploy-form select { width: 100%; }
+}

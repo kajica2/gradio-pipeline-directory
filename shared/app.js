@@ -467,6 +467,9 @@
       '</div>';
     $modalBody.insertAdjacentHTML('beforeend', deployHTML);
 
+    // One-click deploy from browser (uses HF token from header)
+    if (window.HFDeploy) injectDeploySection(t);
+
     // Stats
     var stats = el('div', { class: 'modal__section' }, [
       el('h3', null, ['At a glance']),
@@ -543,6 +546,333 @@
   $modalClose.addEventListener('click', closeModal);
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !$modal.hidden) closeModal();
+  });
+
+  /* ----------------------- HF token pill + one-click deploy ----------------------- */
+  var $hfPill      = document.getElementById('hf-pill');
+  var $hfPillToggle= document.getElementById('hf-pill-toggle');
+  var $hfPillPanel = document.getElementById('hf-pill-panel');
+  var $hfPillLabel = document.getElementById('hf-pill-label');
+  var $hfTokenIn   = document.getElementById('hf-token-input');
+  var $hfTokenSave = document.getElementById('hf-token-save');
+  var $hfTokenClear= document.getElementById('hf-token-clear');
+  var $hfTokenStat = document.getElementById('hf-token-status');
+
+  function refreshHFPill() {
+    var user = window.HFDeploy && window.HFDeploy.getUser();
+    if (user) {
+      $hfPillLabel.textContent = user.name;
+      $hfPillToggle.title = 'Signed in as ' + user.name + ' — click to manage';
+      $hfPill.classList.add('hf-pill--ready');
+      $hfTokenClear.hidden = false;
+      $hfTokenStat.textContent = '✓ signed in as ' + user.name;
+      $hfTokenStat.className = 'hf-pill__status hf-pill__status--ok';
+    } else {
+      $hfPillLabel.textContent = 'HF';
+      $hfPillToggle.title = 'Set your Hugging Face token to deploy from the browser';
+      $hfPill.classList.remove('hf-pill--ready');
+      $hfTokenClear.hidden = true;
+    }
+  }
+  $hfPillToggle.addEventListener('click', function (e) {
+    e.stopPropagation();
+    $hfPillPanel.hidden = !$hfPillPanel.hidden;
+    if (!$hfPillPanel.hidden) {
+      $hfTokenIn.value = '';  // never pre-fill
+      $hfTokenIn.focus();
+    }
+  });
+  // Outside-click handler — capture-phase, ignores clicks inside the pill
+  document.addEventListener('click', function (e) {
+    if ($hfPillPanel.hidden) return;
+    if ($hfPill.contains(e.target)) return;
+    $hfPillPanel.hidden = true;
+  }, true);
+  $hfPillPanel.addEventListener('click', function (e) {
+    e.stopPropagation();  // clicks inside the panel never close it
+  });
+  $hfTokenSave.addEventListener('click', function () {
+    var v = $hfTokenIn.value;
+    $hfTokenStat.textContent = 'Validating…';
+    $hfTokenStat.className = 'hf-pill__status';
+    $hfTokenSave.disabled = true;
+    window.HFDeploy.setToken(v).then(function (res) {
+      $hfTokenSave.disabled = false;
+      if (res.cleared) {
+        $hfTokenStat.textContent = 'Token cleared';
+        $hfTokenStat.className = 'hf-pill__status';
+      } else {
+        $hfTokenStat.textContent = '✓ Saved as ' + res.user.name;
+        $hfTokenStat.className = 'hf-pill__status hf-pill__status--ok';
+        showToast('HF token saved — you can now deploy from any card', 'ok');
+        // Close the panel after a short delay
+        setTimeout(function () { $hfPillPanel.hidden = true; }, 900);
+      }
+      $hfTokenIn.value = '';
+      refreshHFPill();
+    }).catch(function (err) {
+      $hfTokenSave.disabled = false;
+      $hfTokenStat.textContent = '✕ ' + (err.message || 'Invalid token');
+      $hfTokenStat.className = 'hf-pill__status hf-pill__status--err';
+    });
+  });
+  $hfTokenClear.addEventListener('click', function () {
+    window.HFDeploy.clearToken();
+    $hfTokenStat.textContent = 'Token cleared';
+    $hfTokenStat.className = 'hf-pill__status';
+    refreshHFPill();
+  });
+  $hfTokenIn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $hfTokenSave.click();
+  });
+  refreshHFPill();
+
+  /* ---- Inject the "Deploy from here" section into the tool modal ---- */
+  function injectDeploySection(tool) {
+    var section = el('div', { class: 'modal__section modal__section--deploy' });
+    section.innerHTML =
+      '<h3>One-click deploy from this page</h3>' +
+      '<p class="deploy-section__sub">Skip the terminal. Sign in with your HF token in the header, then click below. We push the repo straight to a new Space in your account.</p>' +
+      '<div class="deploy-form">' +
+        '<label for="deploy-space-name" class="deploy-form__label">New Space name</label>' +
+        '<input id="deploy-space-name" type="text" placeholder="' + escapeHTML(tool._owner) + '-' + escapeHTML(tool._repo) + '" autocomplete="off" />' +
+        '<div class="deploy-form__row">' +
+          '<label for="deploy-hardware" class="deploy-form__label">Hardware</label>' +
+          '<select id="deploy-hardware">' +
+            '<option value="cpu-basic" selected>CPU basic · free</option>' +
+            '<option value="t4-small">T4 small · free</option>' +
+            '<option value="t4-medium">T4 medium</option>' +
+            '<option value="a10g-small">A10G small</option>' +
+          '</select>' +
+          '<label class="deploy-form__check">' +
+            '<input type="checkbox" id="deploy-private" />' +
+            '<span>Private</span>' +
+          '</label>' +
+        '</div>' +
+        '<button id="deploy-now-btn" class="btn btn--primary" type="button">Deploy to my HF</button>' +
+      '</div>' +
+      '<div class="progress-log" id="deploy-progress" hidden role="log" aria-live="polite"></div>' +
+      '<p class="deploy-form__result" id="deploy-result" hidden></p>';
+
+    // Insert after the existing "One-command deploy" section
+    var existing = $modalBody.querySelector('.deploy');
+    if (existing) {
+      existing.closest('.modal__section').insertAdjacentElement('afterend', section);
+    } else {
+      $modalBody.appendChild(section);
+    }
+
+    var $nameIn  = section.querySelector('#deploy-space-name');
+    var $hwIn    = section.querySelector('#deploy-hardware');
+    var $privIn  = section.querySelector('#deploy-private');
+    var $btn     = section.querySelector('#deploy-now-btn');
+    var $log     = section.querySelector('#deploy-progress');
+    var $result  = section.querySelector('#deploy-result');
+
+    // Default space name = owner-repo
+    $nameIn.value = tool._owner + '-' + tool._repo;
+
+    $btn.addEventListener('click', function () {
+      if (!window.HFDeploy.isReady()) {
+        $log.hidden = true;  // don't show log yet, just the error
+        $result.hidden = false;
+        $result.className = 'deploy-form__result deploy-form__result--err';
+        $result.innerHTML = '✕ Add your HF token in the header first. <a href="#" id="deploy-open-pill">Click here</a> to open the token panel.';
+        var link = section.querySelector('#deploy-open-pill');
+        if (link) link.addEventListener('click', function (e) {
+          e.preventDefault();
+          $hfPillPanel.hidden = false;
+          $hfTokenIn.focus();
+        });
+        return;
+      }
+      var spaceName = ($nameIn.value || '').trim();
+      if (!/^[A-Za-z0-9._-]{2,96}$/.test(spaceName)) {
+        $log.hidden = true;
+        $result.hidden = false;
+        $result.className = 'deploy-form__result deploy-form__result--err';
+        $result.textContent = '✕ Space name must be 2-96 chars, letters/digits/._-';
+        return;
+      }
+      $btn.disabled = true;
+      $nameIn.disabled = true;
+      $hwIn.disabled = true;
+      $privIn.disabled = true;
+      $log.hidden = false;
+      $log.innerHTML = '';
+      $result.hidden = true;
+      appendLog($log, 'Starting deploy…');
+
+      window.HFDeploy.deployTool(tool, {
+        spaceName: spaceName,
+        hardware:  $hwIn.value,
+        private:   $privIn.checked
+      }, function (p) {
+        if (p.message) appendLog($log, p.message);
+        if (p.stage === 'done' && p.spaceUrl) {
+          $result.hidden = false;
+          $result.className = 'deploy-form__result deploy-form__result--ok';
+          $result.innerHTML = '✓ Your Space is live: <a href="' + p.spaceUrl + '" target="_blank" rel="noopener">' + p.spaceUrl + '</a> · build takes ~60s';
+          showToast('Deploy complete — Space is building', 'ok');
+          $btn.disabled = false;
+          $btn.textContent = 'Deploy again';
+          $nameIn.disabled = false;
+          $hwIn.disabled = false;
+          $privIn.disabled = false;
+        }
+        if (p.error && p.stage !== 'upload-skip') {
+          $result.hidden = false;
+          $result.className = 'deploy-form__result deploy-form__result--err';
+          $result.textContent = '✕ ' + p.error;
+          $btn.disabled = false;
+          $nameIn.disabled = false;
+          $hwIn.disabled = false;
+          $privIn.disabled = false;
+        }
+      }).catch(function (err) {
+        $result.hidden = false;
+        $result.className = 'deploy-form__result deploy-form__result--err';
+        $result.textContent = '✕ ' + (err.message || 'Deploy failed');
+        appendLog($log, 'ERROR: ' + (err.message || 'unknown'));
+        $btn.disabled = false;
+        $btn.textContent = 'Retry deploy';
+        $nameIn.disabled = false;
+        $hwIn.disabled = false;
+        $privIn.disabled = false;
+      });
+    });
+  }
+  function appendLog($el, msg) {
+    var line = document.createElement('div');
+    line.className = 'progress-log__line';
+    line.textContent = (new Date()).toISOString().slice(11, 19) + ' · ' + msg;
+    $el.appendChild(line);
+    $el.scrollTop = $el.scrollHeight;
+  }
+
+  /* ---- "Deploy a model" modal ---- */
+  var $modelModal      = document.getElementById('model-modal');
+  var $modelModalClose = document.getElementById('model-modal-close');
+  var $modelIdIn       = document.getElementById('model-id-input');
+  var $modelNameIn     = document.getElementById('model-space-name');
+  var $modelHwIn       = document.getElementById('model-hardware');
+  var $modelPrivIn     = document.getElementById('model-private');
+  var $modelDeployBtn  = document.getElementById('model-deploy-btn');
+  var $modelProgress   = document.getElementById('model-progress');
+  var $modelProgressLog= document.getElementById('model-progress-log');
+  var $modelProgressRes= document.getElementById('model-progress-result');
+
+  function openModelModal() {
+    $modelProgress.hidden = true;
+    $modelProgressLog.innerHTML = '';
+    $modelProgressRes.hidden = true;
+    $modelProgressRes.className = 'deploy-form__result';
+    $modelProgressRes.innerHTML = '';
+    $modelDeployBtn.disabled = false;
+    $modelDeployBtn.textContent = 'Deploy to my HF';
+    $modelNameIn.disabled = false;
+    $modelHwIn.disabled = false;
+    $modelPrivIn.disabled = false;
+    $modelIdIn.disabled = false;
+    $modelModal.hidden = false;
+    $modelModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { $modelIdIn.focus(); }, 30);
+  }
+  function closeModelModal() {
+    $modelModal.hidden = true;
+    $modelModal.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  $modelModalClose.addEventListener('click', closeModelModal);
+  $modelModal.addEventListener('click', function (e) { if (e.target === $modelModal) closeModelModal(); });
+  document.getElementById('deploy-model-btn').addEventListener('click', openModelModal);
+  var $heroDeployModel = document.getElementById('hero-deploy-model');
+  if ($heroDeployModel) $heroDeployModel.addEventListener('click', openModelModal);
+  document.getElementById('model-modal-token-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    $modelModal.hidden = true;
+    $hfPillPanel.hidden = false;
+    $hfTokenIn.focus();
+  });
+  // Suggestion chips
+  document.querySelectorAll('#model-id-suggestions a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      $modelIdIn.value = a.dataset.mid;
+      var slug = a.dataset.mid.split('/').pop().toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 60);
+      $modelNameIn.value = 'my-' + slug;
+    });
+  });
+  // Model deploy submit
+  $modelDeployBtn.addEventListener('click', function () {
+    if (!window.HFDeploy.isReady()) {
+      $hfPillPanel.hidden = false;
+      $hfTokenIn.focus();
+      showToast('Add your HF token in the header first', 'err');
+      return;
+    }
+    $modelProgress.hidden = false;  // ensure parent is visible whenever we report
+    var modelId = ($modelIdIn.value || '').trim();
+    var spaceName = ($modelNameIn.value || '').trim();
+    if (!/^[^/\s]+\/[^/\s]+$/.test(modelId)) {
+      $modelProgressRes.hidden = false;
+      $modelProgressRes.className = 'deploy-form__result deploy-form__result--err';
+      $modelProgressRes.textContent = '✕ Model ID must be in owner/name format (e.g. stabilityai/stable-diffusion-xl-base-1.0)';
+      $modelDeployBtn.disabled = false;
+      return;
+    }
+    if (!/^[A-Za-z0-9._-]{2,96}$/.test(spaceName)) {
+      $modelProgressRes.hidden = false;
+      $modelProgressRes.className = 'deploy-form__result deploy-form__result--err';
+      $modelProgressRes.textContent = '✕ Space name must be 2-96 chars, letters/digits/._-';
+      $modelDeployBtn.disabled = false;
+      return;
+    }
+    $modelDeployBtn.disabled = true;
+    $modelIdIn.disabled = true;
+    $modelNameIn.disabled = true;
+    $modelHwIn.disabled = true;
+    $modelPrivIn.disabled = true;
+    $modelProgressLog.innerHTML = '';
+    $modelProgressRes.hidden = true;
+    appendLog($modelProgressLog, 'Starting model deploy: ' + modelId);
+
+    window.HFDeploy.deployModel({
+      modelId: modelId,
+      spaceName: spaceName,
+      hardware: $modelHwIn.value,
+      private:  $modelPrivIn.checked
+    }, function (p) {
+      if (p.message) appendLog($modelProgressLog, p.message);
+      if (p.stage === 'done' && p.spaceUrl) {
+        $modelProgressRes.hidden = false;
+        $modelProgressRes.className = 'deploy-form__result deploy-form__result--ok';
+        $modelProgressRes.innerHTML = '✓ Your Space is live: <a href="' + p.spaceUrl + '" target="_blank" rel="noopener">' + p.spaceUrl + '</a> · build takes ~90s';
+        showToast('Model deploy complete — Space is building', 'ok');
+        $modelDeployBtn.textContent = 'Deploy again';
+        $modelDeployBtn.disabled = false;
+        $modelIdIn.disabled = false;
+        $modelNameIn.disabled = false;
+        $modelHwIn.disabled = false;
+        $modelPrivIn.disabled = false;
+      }
+    }).catch(function (err) {
+      $modelProgressRes.hidden = false;
+      $modelProgressRes.className = 'deploy-form__result deploy-form__result--err';
+      $modelProgressRes.textContent = '✕ ' + (err.message || 'Deploy failed');
+      appendLog($modelProgressLog, 'ERROR: ' + (err.message || 'unknown'));
+      $modelDeployBtn.textContent = 'Retry deploy';
+      $modelDeployBtn.disabled = false;
+      $modelIdIn.disabled = false;
+      $modelNameIn.disabled = false;
+      $modelHwIn.disabled = false;
+      $modelPrivIn.disabled = false;
+    });
+  });
+  // Esc closes the model modal too
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$modelModal.hidden) closeModelModal();
   });
 
   /* ----------------------- Search wiring ----------------------- */
