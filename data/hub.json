@@ -424,7 +424,7 @@
         "creative": {
           "tagline": "Eval suites for image / video / generative quality",
           "items": [
-            { "text": "mlfoundations/clip_benchmark — CLIP eval across 35+ datasets", "url": "https://github.com/mlfoundations/clip_benchmark", "tag": "vision" },
+            { "text": "mlfoundations/clip_benchmark — CLIP eval across 35+ datasets", "url": "https://github.com/LAION-AI/CLIP_benchmark", "tag": "vision" },
             { "text": "stability-ai/stability-sdk — Stability AI eval helpers", "url": "https://github.com/Stability-AI", "tag": "gen" }
           ]
         },
@@ -476,7 +476,7 @@
           "tagline": "Tutorials for the visual stack",
           "items": [
             { "text": "Three.js — getting started", "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene", "tag": "three" },
-            { "text": "p5.js — getting started", "url": "https://p5js.org/get-started/", "tag": "p5" },
+            { "text": "p5.js — getting started", "url": "https://p5js.org/tutorials/get-started/", "tag": "p5" },
             { "text": "The Book of Shaders — Patricio Gonzalez Vivo", "url": "https://thebookofshaders.com/", "tag": "shader" },
             { "text": "Lygia — shader std lib documentation", "url": "https://lygia.xyz/", "tag": "shader" }
           ]
@@ -512,9 +512,9 @@
         "musician": {
           "tagline": "Channels for jazz, trumpet, music AI, transcription",
           "items": [
-            { "text": "Open Studio Network — jazz education (Adam Maness, etc.)", "url": "https://www.youtube.com/@openstudionetwork", "tag": "jazz" },
-            { "text": "Trombone Shorter — jazz transcription channel", "url": "https://www.youtube.com/@thejazztranscriber", "tag": "jazz" },
-            { "text": "Valery Vaskovsky — jazz transcription master", "url": "https://www.youtube.com/@valeryvaskovsky", "tag": "jazz" },
+            { "text": "Open Studio (Adam Maness, Peter Martin) — jazz piano + education", "url": "https://www.youtube.com/@openstudio", "tag": "jazz" },
+            { "text": "@jazztranscription — jazz solo transcriptions", "url": "https://www.youtube.com/@jazztranscription", "tag": "jazz" },
+            { "text": "Wynton Marsalis — jazz language, pedagogy, transcription", "url": "https://www.youtube.com/@WyntonMarsalis", "tag": "jazz" },
             { "text": "Adam Neely — music theory + jazz + bass", "url": "https://www.youtube.com/@AdamNeely", "tag": "theory" }
           ]
         },
@@ -531,8 +531,8 @@
           "items": [
             { "text": "The Coding Train — Daniel Shiffman, p5.js + creative coding", "url": "https://www.youtube.com/@TheCodingTrain", "tag": "creative" },
             { "text": "Inigo Quilez — shader + math + 3D", "url": "https://www.youtube.com/@inigoquilez", "tag": "shader" },
-            { "text": "Kishimoto — GLSL + 3D motion", "url": "https://www.youtube.com/@akella_kishimoto", "tag": "shader" },
-            { "text": "Displaced — procedural generation in Unity", "url": "https://www.youtube.com/@displacedgames", "tag": "proc" }
+            { "text": "The Art of Code — GLSL + shader deep-dives", "url": "https://www.youtube.com/@theartofcode", "tag": "shader" },
+            { "text": "@displaced — procedural generation in Unity", "url": "https://www.youtube.com/@displaced", "tag": "proc" }
           ]
         },
         "director": {
@@ -541,7 +541,7 @@
             { "text": "3Blue1Brown — Visual math (transformers, diffusion, manifolds)", "url": "https://www.youtube.com/@3blue1brown", "tag": "math" },
             { "text": "Two Minute Papers — Concise AI research highlights", "url": "https://www.youtube.com/@TwoMinutePapers", "tag": "research" },
             { "text": "The Coding Train — Daniel Shiffman, p5.js + creative coding", "url": "https://www.youtube.com/@TheCodingTrain", "tag": "creative" },
-            { "text": "Open Studio Network — jazz education", "url": "https://www.youtube.com/@openstudionetwork", "tag": "jazz" },
+            { "text": "Open Studio (Adam Maness) — jazz piano + education", "url": "https://www.youtube.com/@openstudio", "tag": "jazz" },
             { "text": "Stanford Online — Full ML, NLP, RL courses (free)", "url": "https://www.youtube.com/@stanfordonline", "tag": "courses" }
           ]
         }
