@@ -14,8 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(__dirname, '..');
 
 const require = createRequire(import.meta.url);
-// Use the puppeteer from the gen-pwa project
-const puppeteer = require('/Users/kaidejuricmasscmbook/Desktop/app/gen-pwa/node_modules/puppeteer');
+const { launch } = await import('./browser.mjs');
 
 const ARTIFACTS = join(projectRoot, 'e2e', 'artifacts');
 if (!existsSync(ARTIFACTS)) mkdirSync(ARTIFACTS, { recursive: true });
@@ -24,10 +23,7 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
 
 (async () => {
   console.log('Launching headless Chrome…');
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  const browser = await launch();
   const page = await browser.newPage();
   await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 2 });
 
@@ -57,7 +53,7 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
   });
 
   console.log('Loading ' + URL_BASE + '/ …');
-  const resp = await page.goto(URL_BASE + '/', { waitUntil: 'networkidle0', timeout: 30000 });
+  const resp = await page.goto(URL_BASE + '/', { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!resp || !resp.ok()) {
     console.error('FAIL: page did not return 2xx. Status:', resp ? resp.status() : 'no response');
     process.exit(1);
@@ -98,11 +94,20 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
 
   const modalTitle = await page.$eval('#modal-title', (el) => el.textContent.trim());
   const deployText = await page.$eval('.deploy', (el) => el.textContent.replace(/\s+/g, ' ').trim());
-  const hasDeployCmd = deployText.includes('gradio deploy') && deployText.includes('--token') && deployText.includes('--repo');
+  // The Gradio CLI never had --token / --repo flags: `deploy` takes only
+  // --title / --app-file / --provider and always deploys the current
+  // directory. The token must arrive via HF_TOKEN and the repo must be
+  // cloned first.
+  const hasDeployCmd =
+    deployText.includes('gradio deploy') &&
+    deployText.includes('HF_TOKEN=') &&
+    deployText.includes('git clone') &&
+    !deployText.includes('--token') &&
+    !deployText.includes('--repo');
   console.log('  → modal title: ' + modalTitle);
   console.log('  → deploy line: ' + deployText);
   if (!hasDeployCmd) {
-    console.error('FAIL: deploy command not present in modal');
+    console.error('FAIL: deploy command in modal is not a valid Gradio CLI invocation');
     await page.screenshot({ path: join(ARTIFACTS, 'fail-deploy-cmd.png'), fullPage: true });
     process.exit(1);
   }
@@ -310,7 +315,7 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
 
   // Test tester page
   console.log('Loading tester.html…');
-  const testerResp = await page.goto(URL_BASE + '/tester.html', { waitUntil: 'networkidle0', timeout: 30000 });
+  const testerResp = await page.goto(URL_BASE + '/tester.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!testerResp || !testerResp.ok()) {
     console.error('FAIL: tester page did not return 2xx. Status:', testerResp ? testerResp.status() : 'no response');
     process.exit(1);

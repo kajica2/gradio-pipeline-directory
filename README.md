@@ -24,9 +24,16 @@ gradio-pipeline-directory/
 ├── gradio-app/             ← A working Gradio app (audio → MIDI) for self-host
 │   ├── app.py
 │   └── requirements.txt
-├── e2e/                    ← Puppeteer test suite
-│   ├── directory.mjs       ← 30+ assertions: cards, modal, versions, theme
+├── e2e/                    ← Puppeteer test suite + link audit
+│   ├── browser.mjs         ← Launcher: local Chrome, or attach to a running one
+│   ├── directory.mjs       ← Local suite: cards, modal, versions, theme
+│   ├── live-verify.mjs     ← Live suite against the deployed URL
+│   ├── deploy-flow.mjs     ← HF token + one-click deploy flow
+│   ├── linkcheck.py        ← Outbound link audit (HTTP + HF hub index)
+│   ├── linkcheck.test.py   ← Regression test for the HF link oracle
 │   └── artifacts/          ← Screenshots from the last test run
+├── .github/ISSUE_TEMPLATE/
+│   └── submit-tool.md      ← Backs the "Submit a tool" CTA
 └── README.md
 ```
 
@@ -177,28 +184,47 @@ Add `.github/ISSUE_TEMPLATE/submit-tool.md` to your repo so the form is pre-popu
 
 ## The deploy command
 
-Every tool modal shows:
+### Primary path — one click, in the browser (zero setup)
+
+Each tool modal leads with **Deploy to my HF**. You paste your Hugging Face
+token once in the header; the page then creates a new Space in your account and
+uploads the repo's files straight to it via the HF API. No Python, no clone, no
+GPU config, no local install. This is the path the site is built around.
+
+### Terminal path — if you prefer the CLI
+
+Every tool modal also shows:
 
 ```bash
-gradio deploy --token YOUR_HF_TOKEN --repo https://github.com/OWNER/REPO
+git clone --depth 1 https://github.com/OWNER/REPO && cd REPO && HF_TOKEN=hf_xxxxxxxxxxxxxxxx gradio deploy
 ```
 
 What this does:
-1. Clones the repo.
-2. Detects the Gradio app (looks for `app.py` by default, or whatever you pass via `--app-file`).
-3. Creates a new Hugging Face Space under your account.
-4. Pushes the code, sets up a Python SDK Space, installs requirements, and boots the app.
+1. Clones the repo into a shallow checkout.
+2. `cd`s into it, because `gradio deploy` always deploys the **current working
+   directory**.
+3. Creates a new Hugging Face Space under your account, uploads the code, sets
+   up a Python SDK Space, installs requirements, and boots the app. The Space
+   name comes from the directory name, so you get `your-name/REPO`.
+
+> **Why the token is an env var and not a flag.** The Gradio CLI's `deploy`
+> command accepts only `--title`, `--app-file` and `--provider`. It has never
+> accepted `--token` or `--repo`, and it has no remote-repo mode at all. The
+> token is read from `HF_TOKEN`, which `huggingface_hub` treats as the highest
+> priority token source, so `HF_TOKEN=... gradio deploy` authenticates the
+> upload without any extra steps.
 
 **Get a token:** <https://huggingface.co/settings/tokens> (needs **Write** access).
 
-**Install the CLI:** `pip install gradio` (the deploy command is bundled with the Gradio library).
+**Install the CLI:** `pip install gradio` (the deploy command is bundled with
+the Gradio library). If you use [`uv`](https://docs.astral.sh/uv/), `uvx gradio
+deploy` runs it without installing anything.
 
 **If the app needs a custom file path:**
 
 ```bash
-gradio deploy --token YOUR_HF_TOKEN \
-  --repo https://github.com/Stability-AI/generative-models \
-  --app-file demo/code/scripts/demo_svd.py
+git clone --depth 1 https://github.com/Stability-AI/generative-models && cd generative-models && \
+  HF_TOKEN=hf_xxxxxxxxxxxxxxxx gradio deploy --app-file demo/code/scripts/demo_svd.py
 ```
 
 The modal shows this automatically when the tool's `gradioFile` is not `app.py`.
@@ -232,7 +258,7 @@ The repo ships a Puppeteer test suite that runs against a local server. It verif
 
 1. 12 directory cards render (matches `featured.json` count)
 2. 11 category pills render
-3. First card modal opens with `gradio deploy --token ... --repo ...` deploy command
+3. First card modal opens with the `git clone … && HF_TOKEN=… gradio deploy` deploy command, plus the in-browser one-click deploy form
 4. Search filter narrows to 1 card for "whisper"
 5. Category filter narrows to 3 cards for "Voice Cloning"
 6. 12 Hub cards render
@@ -255,6 +281,37 @@ URL_BASE=http://localhost:5179 node e2e/directory.mjs
 ```
 
 Test artifacts (screenshots) land in `e2e/artifacts/`.
+
+### Against the live site
+
+```bash
+npm install                # once — pulls puppeteer-core (no Chromium download)
+node e2e/live-verify.mjs   # hits the deployed URL
+node e2e/deploy-flow.mjs   # HF token + one-click deploy flow
+```
+
+The launcher (`e2e/browser.mjs`) prefers the system Chrome and falls back to
+attaching to an already-running Chrome over CDP, so it works in sandboxes that
+block Chrome's `ProcessSingleton` lock. Point it at a specific browser with
+`CDP_PORT=<port>` or `CHROME_PATH=/path/to/chrome`.
+
+### Link audit
+
+Every outbound link in `data/*.json` is checked on demand:
+
+```bash
+python3 e2e/linkcheck.py       # audit, exits non-zero on a dead link
+python3 e2e/linkcheck.test.py  # regression test for the HF link oracle
+```
+
+Hugging Face needs special care: HF serves an unauthenticated page for public
+repos (200) but answers **401 for both gated repos and repos that do not
+exist**, so a plain status check cannot tell "needs a licence" from "was
+deleted". The checker therefore resolves every `huggingface.co` repo URL
+against the public listing API, which returns an exact id match only when the
+repo really exists. This is what catches a removed dataset — four such links
+(`musicnet/musicnet`, `mteb/mteb`, `stabilityai/stable-audio-open-1M`,
+`kakaobrain/karlo-v1-alpha`) were shipping as 404s behind a "gated" label.
 
 ---
 

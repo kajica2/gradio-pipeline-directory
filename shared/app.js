@@ -386,9 +386,20 @@
     return card;
   }
 
+  /* The Gradio CLI's `deploy` command takes only --title / --app-file /
+     --provider. It has NEVER accepted --token or --repo, and it always
+     deploys the *current working directory* to a new Space in the logged-in
+     account. So the honest one-liner has to clone the repo first and pass the
+     token through the HF_TOKEN environment variable, which is the highest
+     priority token source in huggingface_hub (utils/_auth.py).
+
+     The Space name is derived from the clone directory name, so `cd repo`
+     before deploying gives you owner/repo on HF. */
   function buildDeployCommand(t) {
     var repo = 'https://github.com/' + t._owner + '/' + t._repo;
-    var cmd  = 'gradio deploy --token YOUR_HF_TOKEN --repo ' + repo;
+    var cmd = 'git clone --depth 1 ' + repo +
+              ' && cd ' + t._repo +
+              ' && HF_TOKEN=hf_xxxxxxxxxxxxxxxx gradio deploy';
     if (t.gradioFile && t.gradioFile !== 'app.py') {
       cmd += ' --app-file ' + t.gradioFile;
     }
@@ -448,21 +459,29 @@
     ]);
     $modalBody.appendChild(header);
 
-    // Deploy command
+    // Terminal deploy command (secondary — the one-click button above is the
+    // zero-setup path). The Gradio CLI only accepts --title / --app-file /
+    // --provider, so the token goes through HF_TOKEN and the repo is cloned
+    // first. See buildDeployCommand().
     var deployHTML =
       '<div class="modal__section">' +
-        '<h3>One-command deploy</h3>' +
+        '<h3>Prefer the terminal?</h3>' +
+        '<p class="deploy-section__sub">The <code>gradio</code> CLI deploys the <em>current directory</em> to a new Space in your account, so this clones the repo first and passes your token via <code>HF_TOKEN</code>.</p>' +
         '<div class="deploy" id="deploy-block">' +
           '<button class="deploy__copy" id="deploy-copy" type="button">Copy</button>' +
-          '<span class="tok-cmd">gradio deploy</span> ' +
-          '<span class="tok-flag">--token</span> <span class="tok-value">YOUR_HF_TOKEN</span> ' +
-          '<span class="tok-flag">--repo</span> <span class="tok-url">' + escapeHTML(repoURL) + '</span>' +
+          '<span class="tok-cmd">git clone --depth 1</span> ' +
+          '<span class="tok-url">' + escapeHTML(repoURL) + '</span> ' +
+          '<span class="tok-cmd">&amp;&amp; cd ' + escapeHTML(t._repo) + '</span> ' +
+          '<span class="tok-cmd">&amp;&amp;</span> ' +
+          '<span class="tok-flag">HF_TOKEN=</span><span class="tok-value">hf_xxxxxxxxxxxxxxxx</span> ' +
+          '<span class="tok-cmd">gradio deploy</span>' +
           (t.gradioFile && t.gradioFile !== 'app.py' ? ' <span class="tok-flag">--app-file</span> ' + escapeHTML(t.gradioFile) : '') +
         '</div>' +
         '<div class="help">' +
           '<strong>Get your token</strong> at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens</a> ' +
-          '(write access needed). Paste the command in any terminal with the <code>gradio</code> CLI installed ' +
-          '(<code>pip install gradio</code>). Your Space is live in ~60 seconds.' +
+          '(write access needed). Needs Python on your machine: <code>pip install gradio</code> ' +
+          '(or <code>uvx gradio deploy</code> if you use <code>uv</code>). ' +
+          '<strong>Want no setup at all?</strong> Use the one-click button above — it runs entirely in your browser.' +
         '</div>' +
       '</div>';
     $modalBody.insertAdjacentHTML('beforeend', deployHTML);
@@ -631,8 +650,8 @@
   function injectDeploySection(tool) {
     var section = el('div', { class: 'modal__section modal__section--deploy' });
     section.innerHTML =
-      '<h3>One-click deploy from this page</h3>' +
-      '<p class="deploy-section__sub">Skip the terminal. Sign in with your HF token in the header, then click below. We push the repo straight to a new Space in your account.</p>' +
+      '<h3>Deploy now — zero setup</h3>' +
+      '<p class="deploy-section__sub">No Python, no clone, no GPU config. Add your HF token in the header once, then click below and we push this repo straight into a new Space in your account.</p>' +
       '<div class="deploy-form">' +
         '<label for="deploy-space-name" class="deploy-form__label">New Space name</label>' +
         '<input id="deploy-space-name" type="text" placeholder="' + escapeHTML(tool._owner) + '-' + escapeHTML(tool._repo) + '" autocomplete="off" />' +
@@ -654,10 +673,11 @@
       '<div class="progress-log" id="deploy-progress" hidden role="log" aria-live="polite"></div>' +
       '<p class="deploy-form__result" id="deploy-result" hidden></p>';
 
-    // Insert after the existing "One-command deploy" section
+    // The one-click browser deploy is the PRIMARY path (zero local setup), so
+    // it goes above the terminal-command section.
     var existing = $modalBody.querySelector('.deploy');
     if (existing) {
-      existing.closest('.modal__section').insertAdjacentElement('afterend', section);
+      existing.closest('.modal__section').insertAdjacentElement('beforebegin', section);
     } else {
       $modalBody.appendChild(section);
     }

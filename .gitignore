@@ -6,3 +6,9 @@ e2e/artifacts/*.png
 .env.local
 .vercel
 SPACE_README.md
+
+# Puppeteer / tooling caches (not part of the site)
+.browsers/
+.npm-cache-puppeteer/
+.chrome-t-*/
+e2e/.chrome-t-*/

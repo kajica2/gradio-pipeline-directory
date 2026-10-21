@@ -1,0 +1,16 @@
+{
+  "name": "gradio-pipeline-directory",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Directory of open-source Gradio pipelines deployable to Hugging Face Spaces with zero local setup.",
+  "type": "module",
+  "scripts": {
+    "serve": "python3 -m http.server 5173",
+    "e2e": "node e2e/directory.mjs",
+    "e2e:live": "node e2e/live-verify.mjs",
+    "links": "python3 e2e/linkcheck.py"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.10.0"
+  }
+}

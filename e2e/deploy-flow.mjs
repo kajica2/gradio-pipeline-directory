@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // E2E for the new HF token + one-click deploy flow
-import puppeteer from 'puppeteer';
+import { launch } from './browser.mjs';
 import { mkdir } from 'node:fs/promises';
 
-const BASE = 'https://kaidjuric-gradio-pipeline-directory.static.hf.space';
+const BASE = process.env.URL_BASE || 'https://kaidjuric-gradio-pipeline-directory.static.hf.space';
 const ART = '/Users/kaidejuricmasscmbook/.minimax/workspace/gradio-pipeline-directory/e2e/artifacts';
 await mkdir(ART, { recursive: true });
 
@@ -12,8 +12,11 @@ let failed = 0;
 const fail = (m) => { console.error('  ❌', m); failed++; };
 const pass = (m) => console.log('  ✅', m);
 
-const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+const browser = await launch();
 const page = await browser.newPage();
+await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 });
+page.setDefaultNavigationTimeout(60000);
+page.setDefaultTimeout(20000);
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 page.on('pageerror', (e) => consoleErrors.push('pageerror: ' + e.message));
@@ -21,7 +24,7 @@ page.on('pageerror', (e) => consoleErrors.push('pageerror: ' + e.message));
 log(`Testing HF deploy flow: ${BASE}`);
 
 // 1) Page loads
-const resp = await page.goto(BASE + '/', { waitUntil: 'networkidle2', timeout: 60000 });
+const resp = await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
 if (resp.status() !== 200) fail(`Index returned ${resp.status()}`); else pass('Index 200');
 
 // 2) HFDeploy module is loaded
@@ -106,7 +109,7 @@ await page.evaluate(() => {
   }
 });
 // Easiest path: reload the page so the IIFE re-reads localStorage
-await page.reload({ waitUntil: 'networkidle2' });
+await page.reload({ waitUntil: 'domcontentloaded' });
 // Re-open the model modal
 await page.click('#deploy-model-btn');
 await new Promise(r => setTimeout(r, 300));
@@ -151,7 +154,7 @@ if (realErrors.length) fail(`Console errors:\n  ${realErrors.join('\n  ')}`);
 else pass(`No real console errors (${consoleErrors.length} total)`);
 
 // 16) Final screenshot
-await page.goto(BASE + '/#hub', { waitUntil: 'networkidle2', timeout: 60000 });
+await page.goto(BASE + '/#hub', { waitUntil: 'domcontentloaded', timeout: 60000 });
 await new Promise(r => setTimeout(r, 800));
 await page.screenshot({ path: ART + '/hf-deploy-final.png', fullPage: false });
 pass(`Final screenshot saved`);

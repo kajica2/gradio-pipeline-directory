@@ -1,6 +1,7 @@
 {
   "_comment": "Hand-picked Gradio-powered repos. Every entry here is verified to (a) exist on GitHub, (b) ship an `app.py` (or equivalent) that Gradio can deploy. The directory is seeded from this file on first load. New tools submitted via 'Submit a tool' get queued in data/submissions.json and can be reviewed/merged here.",
-  "_deploy": "gradio deploy --token YOUR_HF_TOKEN --repo https://github.com/OWNER/REPO",
+  "_deploy": "git clone --depth 1 https://github.com/OWNER/REPO && cd REPO && HF_TOKEN=hf_xxxxxxxxxxxxxxxx gradio deploy",
+  "_deployNote": "The Gradio CLI's `deploy` command accepts only --title / --app-file / --provider (it has never accepted --token or --repo) and always deploys the current working directory to a new Space in the logged-in account. The token is passed through the HF_TOKEN environment variable, which huggingface_hub reads first. The directory's primary path is the in-browser one-click deploy, which needs no local Python at all.",
   "_getToken": "https://huggingface.co/settings/tokens (write access required)",
   "tools": [
     {

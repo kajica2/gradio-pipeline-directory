@@ -2,7 +2,7 @@
 // Puppeteer e2e: verify the LIVE site at kajica2.github.io/gradio-pipeline-directory
 // Asserts: page loads, cards render, search/filter work, version picker works,
 // modal opens, deploy command is copyable, tester.html loads, no console errors.
-import puppeteer from 'puppeteer';
+import { launch } from './browser.mjs';
 import { mkdir } from 'node:fs/promises';
 
 const BASE = 'https://kajica2.github.io/gradio-pipeline-directory';
@@ -13,15 +13,18 @@ const log = (...a) => console.log('[e2e]', ...a);
 const fail = (msg) => { console.error('  ❌', msg); process.exitCode = 1; };
 const pass = (msg) => console.log('  ✅', msg);
 
-const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
+const browser = await launch();
 const page = await browser.newPage();
+await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 });
+page.setDefaultNavigationTimeout(60000);
+page.setDefaultTimeout(20000);
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 page.on('pageerror', (e) => consoleErrors.push('pageerror: ' + e.message));
 
 // ============ 1) Index page ============
 log('Testing index page...');
-const resp = await page.goto(BASE + '/', { waitUntil: 'networkidle2', timeout: 60000 });
+const resp = await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
 if (resp.status() !== 200) fail(`Index returned ${resp.status()}`);
 else pass('Index returns 200');
 
@@ -89,11 +92,30 @@ await page.waitForSelector('#modal:not([hidden])', { timeout: 5000 });
 const modalTitle = await page.$eval('#modal-title', el => el.textContent);
 const deployCmd = await page.evaluate(() => {
   const all = document.querySelectorAll('#modal-body *');
-  for (const el of all) if (el.textContent.includes('gradio deploy') && el.children.length < 5) return el.textContent.trim();
+  for (const el of all) if (el.textContent.includes('gradio deploy') && el.children.length < 8) return el.textContent.trim();
   return null;
 });
-if (!deployCmd || !deployCmd.includes('--token YOUR_HF_TOKEN')) fail('Modal missing deploy command');
-else pass(`Modal opened, deploy command: "${deployCmd}"`);
+if (!deployCmd) fail('Modal missing deploy command');
+else if (!deployCmd.includes('HF_TOKEN=')) fail(`Deploy command does not pass the token via HF_TOKEN: "${deployCmd}"`);
+else if (!deployCmd.includes('git clone')) fail(`Deploy command does not clone the repo first: "${deployCmd}"`);
+else if (deployCmd.includes('--token')) fail(`Deploy command uses the non-existent --token flag: "${deployCmd}"`);
+else if (deployCmd.includes('--repo')) fail(`Deploy command uses the non-existent --repo flag: "${deployCmd}"`);
+else pass(`Modal opened, deploy command valid: "${deployCmd}"`);
+
+// The in-browser one-click deploy is the primary path and must render ABOVE
+// the terminal command block.
+const deployOrder = await page.evaluate(() => {
+  const body = document.getElementById('modal-body');
+  const oneClick = body.querySelector('.modal__section--deploy');
+  const terminal = body.querySelector('.deploy');
+  if (!oneClick) return 'missing-one-click';
+  if (!terminal) return 'missing-terminal';
+  return oneClick.compareDocumentPosition(terminal) & Node.DOCUMENT_POSITION_FOLLOWING ? 'ok' : 'wrong-order';
+});
+if (deployOrder === 'missing-one-click') fail('Modal missing the in-browser one-click deploy form');
+else if (deployOrder === 'missing-terminal') fail('Modal missing the terminal deploy block');
+else if (deployOrder === 'wrong-order') fail('One-click deploy must appear above the terminal command');
+else pass('One-click deploy form renders above the terminal command');
 
 await page.screenshot({ path: ART + '/live-modal.png' });
 // Close
@@ -112,7 +134,7 @@ await page.click('#theme-toggle'); // back
 
 // ============ 7) Tester page ============
 log('Testing tester.html...');
-await page.goto(BASE + '/tester.html', { waitUntil: 'networkidle2', timeout: 60000 });
+await page.goto(BASE + '/tester.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
 if (page.url().includes('tester.html')) pass('tester.html loads');
 const testerStatus = await page.evaluate(() => {
   return {
@@ -131,7 +153,7 @@ if (realErrors.length) fail(`Console errors:\n  ${realErrors.join('\n  ')}`);
 else pass('No console errors (favicon 404 ignored)');
 
 // Final screenshot of the live hub
-await page.goto(BASE + '/#hub', { waitUntil: 'networkidle2', timeout: 60000 });
+await page.goto(BASE + '/#hub', { waitUntil: 'domcontentloaded', timeout: 60000 });
 await new Promise(r => setTimeout(r, 800));
 await page.screenshot({ path: ART + '/live-hub-final.png', fullPage: false });
 pass(`Screenshot saved: live-hub-final.png`);

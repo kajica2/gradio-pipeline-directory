@@ -345,7 +345,7 @@
           "items": [
             { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
             { "text": "mozilla-foundation/common_voice_17_0 — Multilingual crowdsourced speech (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" },
-            { "text": "mteb/mteb — Massive Text Embedding Benchmark dataset hub", "url": "https://huggingface.co/datasets/mteb/mteb", "tag": "nlp" },
+            { "text": "mteb/results — Massive Text Embedding Benchmark leaderboard results", "url": "https://huggingface.co/datasets/mteb/results", "tag": "nlp" },
             { "text": "argilla/distilabel-intel-orca-dpo-pairs — DPO training data", "url": "https://huggingface.co/datasets/argilla/distilabel-intel-orca-dpo-pairs", "tag": "rlhf" }
           ]
         },
@@ -355,7 +355,7 @@
             { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs for captioning", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
             { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
             { "text": "SEACrowd/sea_bench — Multilingual Southeast-Asian NLG", "url": "https://huggingface.co/datasets/SEACrowd/sea_bench", "tag": "multilingual" },
-            { "text": "musicnet/musicnet — 330h classical chamber recordings (gated; request access on HF)", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" },
+            { "text": "MusicNet (Zenodo) — 330h classical chamber recordings + note annotations", "url": "https://zenodo.org/records/5120004", "tag": "music" },
             { "text": "mozilla-foundation/common_voice_17_0 — Multilingual crowdsourced corpus (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" }
           ]
         },
@@ -364,7 +364,7 @@
           "items": [
             { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs (captioning eval)", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
             { "text": "openslr/librispeech_asr — 1000h + clean/test splits for ASR eval", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
-            { "text": "musicnet/musicnet — 330h classical + label CSV for AMT eval", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" },
+            { "text": "malerlab/musicnet-unidac4-ytsv — MusicNet + MusicNetEM aligned labels for AMT eval", "url": "https://huggingface.co/datasets/malerlab/musicnet-unidac4-ytsv", "tag": "music" },
             { "text": "SEACrowd/sea_bench — Multilingual Southeast-Asian NLG eval", "url": "https://huggingface.co/datasets/SEACrowd/sea_bench", "tag": "multilingual" },
             { "text": "mozilla-foundation/common_voice_17_0 — Multilingual ASR eval (gated)", "url": "https://huggingface.co/datasets/mozilla-foundation/common_voice_17_0", "tag": "speech" }
           ]
@@ -372,9 +372,9 @@
         "creative": {
           "tagline": "Datasets for image / video / audio-visual training",
           "items": [
-            { "text": "laion/laion2b-en — 2B image-text pairs (the open CLIP training corpus)", "url": "https://huggingface.co/datasets/laion/laion2b-en", "tag": "image" },
-            { "text": "kakaobrain/karlo-v1-alpha — Conceptual captions + art", "url": "https://huggingface.co/datasets/kakaobrain/karlo-v1-alpha", "tag": "image" },
-            { "text": "stabilityai/stable-audio-open-1M — 1M audio-caption pairs for SFX generation", "url": "https://huggingface.co/datasets/stabilityai/stable-audio-open-1M", "tag": "audio" },
+            { "text": "laion/relaion2B-en-research-safe — research-safe image-text pairs (gated: request access)", "url": "https://huggingface.co/datasets/laion/relaion2B-en-research-safe", "tag": "image" },
+            { "text": "kakaobrain/karlo-v1-alpha — unCLIP text-to-image model (Karlo v1 alpha)", "url": "https://huggingface.co/kakaobrain/karlo-v1-alpha", "tag": "image" },
+            { "text": "stabilityai/stable-audio-open-1.0 — text-to-audio model for SFX + ambience (gated: request access)", "url": "https://huggingface.co/stabilityai/stable-audio-open-1.0", "tag": "audio" },
             { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs (audio ↔ text)", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "audio" }
           ]
         },
@@ -383,9 +383,9 @@
           "items": [
             { "text": "amaai-lab/MidiCaps — 168K MIDI-text pairs for captioning", "url": "https://huggingface.co/datasets/amaai-lab/MidiCaps", "tag": "music" },
             { "text": "openslr/librispeech_asr — 1000h read English speech", "url": "https://huggingface.co/datasets/openslr/librispeech_asr", "tag": "speech" },
-            { "text": "laion/laion2b-en — 2B image-text pairs (the open CLIP corpus)", "url": "https://huggingface.co/datasets/laion/laion2b-en", "tag": "image" },
-            { "text": "stabilityai/stable-audio-open-1M — 1M audio-caption pairs", "url": "https://huggingface.co/datasets/stabilityai/stable-audio-open-1M", "tag": "audio" },
-            { "text": "musicnet/musicnet — 330h classical chamber recordings (gated)", "url": "https://huggingface.co/datasets/musicnet/musicnet", "tag": "music" }
+            { "text": "laion/relaion2B-en-research-safe — research-safe image-text pairs (gated)", "url": "https://huggingface.co/datasets/laion/relaion2B-en-research-safe", "tag": "image" },
+            { "text": "Gaie/t2a_stable_audio_open — public text-to-audio example set (no gate)", "url": "https://huggingface.co/datasets/Gaie/t2a_stable_audio_open", "tag": "audio" },
+            { "text": "MusicNet (Zenodo) — 330h classical chamber recordings (raw audio)", "url": "https://zenodo.org/records/5120004", "tag": "music" }
           ]
         }
       }
