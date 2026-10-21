@@ -332,6 +332,15 @@ python3 e2e/linkcheck.py       # audit, exits non-zero on a dead link
 python3 e2e/linkcheck.test.py  # regression test for the HF link oracle
 ```
 
+It also probes the **Gradio Spaces** the directory links to. A Space URL on
+`huggingface.co` is only a front door — the app itself is served from
+`<owner>-<name>.hf.space`, and a sleeping Space answers `503` while a removed
+one answers `404`, so the front-door link can look perfectly healthy while the
+demo is dead. The checker hits `/config` on the real host and reports the
+endpoint count. Two of the four demo Spaces were dead when this check was
+added (`akhaliq/demucs` and `coqui/xtts` both 503); they now point at live
+replacements.
+
 Hugging Face needs special care: HF serves an unauthenticated page for public
 repos (200) but answers **401 for both gated repos and repos that do not
 exist**, so a plain status check cannot tell "needs a licence" from "was

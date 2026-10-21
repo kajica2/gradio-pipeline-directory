@@ -221,6 +221,60 @@ def audit_url(url):
     return url, status, final, note
 
 
+def space_hosts():
+    """Return the live Space hosts referenced by featured.json.
+
+    A Space URL on huggingface.co is a front door; the app itself is served
+    from <owner>-<name>.hf.space. A Space that is sleeping answers 503 and
+    one that was removed answers 404, so the front-door URL can look fine
+    while the demo is dead.
+    """
+    hosts = {}
+    path = os.path.join(ROOT, "data", "featured.json")
+    if not os.path.exists(path):
+        return hosts
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    for tool in data.get("tools", []):
+        url = tool.get("spaceUrl")
+        if not url:
+            continue
+        m = re.match(
+            r"^https?://huggingface\.co/spaces/([^/]+)/([^/?#]+)", url
+        )
+        if not m:
+            continue
+        owner, name = m.group(1), m.group(2)
+        host = f"{owner}-{name}".lower() + ".hf.space"
+        hosts[host] = tool.get("id") or url
+    return hosts
+
+
+def check_space_host(host):
+    """Probe a Space's /config. Returns (status, note)."""
+    url = f"https://{host}/config"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            raw = resp.read()
+            try:
+                cfg = json.loads(raw.decode("utf-8"))
+            except Exception:
+                return resp.status, "live-unparsed"
+            deps = cfg.get("dependencies") or []
+            if not deps:
+                return resp.status, "live-no-endpoints"
+            return resp.status, f"live ({len(deps)} endpoint(s))"
+    except urllib.error.HTTPError as exc:
+        if exc.code == 503:
+            return 503, "sleeping"
+        if exc.code == 404:
+            return 404, "missing"
+        return exc.code, "http-error"
+    except Exception as exc:  # noqa: BLE001
+        return None, f"error:{type(exc).__name__}"
+
+
 def main():
     as_json = "--json" in sys.argv
     urls = collect_urls()
@@ -272,6 +326,23 @@ def main():
             print(f"  {url}")
         print()
 
+    # --- Gradio Space health -------------------------------------------
+    spaces = space_hosts()
+    space_results = []
+    with cf.ThreadPoolExecutor(max_workers=6) as pool:
+        futures = {pool.submit(check_space_host, h): h for h in spaces}
+        for fut in cf.as_completed(futures):
+            host = futures[fut]
+            status, note = fut.result()
+            space_results.append((host, status, note))
+    space_results.sort()
+    dead_spaces = [s for s in space_results if s[1] != 200]
+    print(f"SPACES: {len(space_results) - len(dead_spaces)} live / {len(space_results)}")
+    for host, status, note in space_results:
+        mark = "OK " if status == 200 else "!! "
+        print(f"  {mark}[{status}] {note:<16} {host}  ({spaces[host]})")
+    print()
+
     if as_json:
         print(json.dumps(
             {
@@ -280,6 +351,10 @@ def main():
                 "soft": [{"url": u, "status": s, "note": n} for u, s, f, n in soft],
                 "dead": [{"url": u, "status": s, "note": n} for u, s, f, n in dead],
                 "placeholders": placeholders,
+                "spaces": [
+                    {"host": h, "status": s, "note": n, "tool": spaces[h]}
+                    for h, s, n in space_results
+                ],
                 "all": [{"url": u, "status": s, "final": f, "note": n} for u, s, f, n in results],
             },
             indent=2,
@@ -289,7 +364,7 @@ def main():
         for url, status, final, note in results:
             print(f"  {str(status or 'ERR'):>4}  {note:<22} {url}")
 
-    return 1 if dead else 0
+    return 1 if (dead or dead_spaces) else 0
 
 
 if __name__ == "__main__":

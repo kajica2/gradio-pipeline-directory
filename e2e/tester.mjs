@@ -17,7 +17,7 @@ const ART = '/Users/kaidejuricmasscmbook/.minimax/workspace/gradio-pipeline-dire
 await mkdir(ART, { recursive: true });
 
 // A small, public, always-on Gradio Space.
-const TARGET = process.env.SPACE_ID || 'akhaliq/demucs';
+const TARGET = process.env.SPACE_ID || 'suno/bark';
 
 const log = (...a) => console.log('[tester]', ...a);
 let failed = 0;
