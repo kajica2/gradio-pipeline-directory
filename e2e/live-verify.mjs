@@ -39,6 +39,15 @@ else pass(`12 hub cards rendered (12 sections × version-picker content)`);
 
 // ============ 2) Version picker: 5 personas ============
 log('Testing 5-version picker...');
+// The active lens is persisted to localStorage, so a previous run (or a
+// previous visit in the same browser profile) can leave a different version
+// active and make the click below a no-op. Reset to the default first.
+await page.evaluate(() => {
+  localStorage.removeItem('gradio-pipeline-directory:version');
+});
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForSelector('#hub-grid .hub-card, #hub-grid .card', { timeout: 15000 });
+
 const versionPills = await page.$$eval('#version-pills .version-pill, #version-pills [role="tab"]', els => els.length);
 if (versionPills !== 5) fail(`Expected 5 version pills, got ${versionPills}`);
 else pass('5 version pills present (Builder / Musician / Researcher / Creative Coder / Director)');

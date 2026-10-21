@@ -67,6 +67,16 @@
             <button class="tester__btn" id="connect-btn" type="button">Connect</button>
           </div>
 
+          <p class="tester__label" style="margin-top: var(--s-3);">Hugging Face token <span style="opacity: .6;">(optional)</span></p>
+          <div class="tester__row">
+            <input class="tester__input" id="hf-token" type="password" placeholder="hf_xxxxxxxxxxxxxxxx — only needed for private Spaces and ZeroGPU quotas" autocomplete="off" spellcheck="false" />
+            <button class="tester__btn tester__btn--secondary" id="hf-token-clear" type="button">Clear</button>
+          </div>
+          <p style="font-size: var(--fs-xs); color: var(--text-faint); margin: 6px 0 0; line-height: 1.5;">
+            Stored in your browser's localStorage only — it is sent to huggingface.co and nowhere else.
+            Get one at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener">huggingface.co/settings/tokens</a>.
+          </p>
+
           <p class="tester__label" style="margin-top: var(--s-3);">Quick picks (from the directory)</p>
           <div id="quick-picks" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
 
@@ -111,7 +121,39 @@
        Uses @gradio/client (from esm.sh CDN) to connect to any HF Space,
        inspect the API, and fire requests. Zero backend, zero token.
        ================================================================= */
-    import { Client } from "https://esm.sh/@gradio/client@0.20.1";
+
+    /* The client is loaded lazily and from a list of sources, because the
+       version matters: @gradio/client 0.20.x (2024) cannot talk to a
+       Gradio 6.x Space -- Client.connect() dies with "TypeError: Failed to
+       fetch". Spaces now run Gradio 6, whose client is 2.x. Pinning the
+       major (not the exact patch) keeps us working against Gradio 5 and 6
+       Spaces alike, and the jsDelivr entry is a fallback in case esm.sh is
+       unreachable. */
+    const CLIENT_SOURCES = [
+      'https://esm.sh/@gradio/client@2',
+      'https://cdn.jsdelivr.net/npm/@gradio/client@2/+esm',
+      'https://esm.sh/@gradio/client@1',
+    ];
+
+    let Client = null;
+    async function loadClient() {
+      if (Client) return Client;
+      const errors = [];
+      for (const src of CLIENT_SOURCES) {
+        try {
+          const mod = await import(src);
+          if (mod && mod.Client) {
+            Client = mod.Client;
+            console.info('[tester] loaded @gradio/client from', src);
+            return Client;
+          }
+          errors.push(src + ': no Client export');
+        } catch (e) {
+          errors.push(src + ': ' + (e && e.message ? e.message : e));
+        }
+      }
+      throw new Error('Could not load @gradio/client. Tried: ' + errors.join(' | '));
+    }
 
     // ---------- DOM ----------
     const $url      = document.getElementById('space-url');
@@ -125,6 +167,9 @@
     const $resp     = document.getElementById('response');
     const $log      = document.getElementById('log');
     const $themeBtn = document.getElementById('theme-toggle');
+    const $hfToken  = document.getElementById('hf-token');
+    const $hfTokenClear = document.getElementById('hf-token-clear');
+    const HF_TOKEN_KEY = 'gpd-hf-token';
 
     // ---------- State ----------
     let client = null;
@@ -133,6 +178,7 @@
     let currentEndpoint = null;
     let activeJob = null;
     const formState = {}; // { paramName: value }
+    let configComponents = {}; // { [componentId]: component } from the Space config
 
     // ---------- Helpers ----------
     function log(message, level) {
@@ -178,6 +224,21 @@
       if (t === 'json') return 'textarea';
       return 'text';
     }
+
+    /* Gradio changed the shape of dependency.inputs:
+         Gradio 4/5 -> [{ id, type, props: {...} }, ...]
+         Gradio 6   -> [11, 12]  (plain component ids; the component
+                                   definitions live in config.components)
+       Resolve both to a list of component objects so the form builder works
+       against either generation of Space. */
+    function resolveInputs(dep) {
+      const raw = (dep && dep.inputs) || [];
+      return raw.map(function (x) {
+        if (x && typeof x === 'object') return x;
+        if (typeof x === 'number' && configComponents[x]) return configComponents[x];
+        return { type: 'Any', props: {} };
+      });
+    }
     function getCss(v) {
       return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     }
@@ -194,18 +255,40 @@
       log('Connecting to ' + ref.owner + '/' + ref.name + '…', 'info');
       setResponse('Connecting…');
       try {
-        const c = await Client.connect(ref.owner + '/' + ref.name);
+        const GradioClient = await loadClient();
+        // An HF token lifts the anonymous ZeroGPU quota and is required for
+        // private Spaces. The client renamed `hf_token` -> `token`, so send
+        // both (the client only falls back to hf_token when token is empty).
+        const token = ($hfToken.value || '').trim();
+        const connectOpts = token ? { token: token, hf_token: token } : undefined;
+        const c = await GradioClient.connect(ref.owner + '/' + ref.name, connectOpts);
         client = c;
         currentSpace = ref;
         // Inspect config
         const config = c.config || {};
         const deps = config.dependencies || [];
+        // Index the component table so Gradio 6 style numeric input ids can
+        // be resolved back to their component definition.
+        configComponents = {};
+        (config.components || []).forEach(function (comp) {
+          if (comp && typeof comp.id === 'number') configComponents[comp.id] = comp;
+        });
         currentEndpoints = deps;
         log('Connected. Found ' + deps.length + ' endpoint(s).', 'ok');
         renderEndpoints();
       } catch (e) {
-        log('Connect failed: ' + (e.message || e), 'err');
-        setResponse('Connect failed: ' + (e.message || e), 'err');
+        const msg = (e && e.message) ? e.message : String(e);
+        // ZeroGPU Spaces ration anonymous GPU time; a token raises the quota.
+        if (/ZeroGPU quota/i.test(msg)) {
+          log('Connect failed: ' + msg, 'err');
+          setResponse(
+            'Connect failed: ' + msg + ' — add a Hugging Face token above to raise the quota.',
+            'err',
+          );
+        } else {
+          log('Connect failed: ' + msg, 'err');
+          setResponse('Connect failed: ' + msg, 'err');
+        }
       } finally {
         $connect.disabled = false;
         $connect.textContent = 'Connect';
@@ -220,7 +303,7 @@
       }
       currentEndpoints.forEach((dep, i) => {
         const apiName = dep.api_name || ('predict_' + i);
-        const inputs = dep.inputs || [];
+        const inputs = resolveInputs(dep);
         const inputTypes = inputs.map(componentInputType).join(', ');
         const node = document.createElement('div');
         node.className = 'endpoint';
@@ -236,11 +319,12 @@
       currentEndpoint = currentEndpoints[index];
       if (!currentEndpoint) return;
       const apiName = currentEndpoint.api_name || ('predict_' + index);
-      const inputs = currentEndpoint.inputs || [];
+      const inputs = resolveInputs(currentEndpoint);
       $selEp.innerHTML = '<span style="color: var(--accent);">/' + apiName + '</span>  ·  ' + inputs.length + ' input(s)';
 
       $form.innerHTML = '';
-      formState._clear();
+      // Define the helpers BEFORE the first call -- calling formState._clear()
+      // before it exists throws "formState._clear is not a function".
       formState._set = (k, v) => { formState[k] = v; };
       formState._clear = () => { Object.keys(formState).forEach(k => { if (k !== '_set' && k !== '_clear') delete formState[k]; }); };
       formState._clear();
@@ -355,7 +439,9 @@
 
     async function callEndpoint() {
       if (!client || !currentEndpoint) return;
-      const inputs = currentEndpoint.inputs || [];
+      // Resolve through the same helper the form used, so the payload order
+      // always matches the fields the user filled in.
+      const inputs = resolveInputs(currentEndpoint);
       const payload = inputs.map((_, i) => formState['p' + i]);
       $call.disabled = true;
       $cancel.disabled = false;
@@ -383,8 +469,16 @@
         log('OK · ' + dt + 'ms · response received', 'ok');
         setResponse(text, 'ok');
       } catch (e) {
-        log('Error: ' + (e.message || e), 'err');
-        setResponse('Error: ' + (e.message || e), 'err');
+        const msg = (e && e.message) ? e.message : String(e);
+        log('Error: ' + msg, 'err');
+        if (/ZeroGPU quota/i.test(msg)) {
+          setResponse(
+            'Error: ' + msg + ' — add a Hugging Face token above to raise the quota.',
+            'err',
+          );
+        } else {
+          setResponse('Error: ' + msg, 'err');
+        }
       } finally {
         $call.disabled = false;
         $cancel.disabled = true;
@@ -445,6 +539,28 @@
     // ---------- Wire up ----------
     $connect.addEventListener('click', connect);
     $url.addEventListener('keydown', e => { if (e.key === 'Enter') connect(); });
+
+    // HF token: persisted locally, sent only to huggingface.co.
+    (function restoreToken() {
+      let saved = '';
+      try { saved = localStorage.getItem(HF_TOKEN_KEY) || ''; } catch (e) {}
+      $hfToken.value = saved;
+      $hfTokenClear.hidden = !saved;
+    })();
+    $hfToken.addEventListener('change', () => {
+      const v = ($hfToken.value || '').trim();
+      try {
+        if (v) localStorage.setItem(HF_TOKEN_KEY, v);
+        else localStorage.removeItem(HF_TOKEN_KEY);
+      } catch (e) {}
+      $hfTokenClear.hidden = !v;
+    });
+    $hfTokenClear.addEventListener('click', () => {
+      $hfToken.value = '';
+      try { localStorage.removeItem(HF_TOKEN_KEY); } catch (e) {}
+      $hfTokenClear.hidden = true;
+      log('Hugging Face token cleared.', 'info');
+    });
     $call.addEventListener('click', callEndpoint);
     $cancel.addEventListener('click', cancelCall);
 

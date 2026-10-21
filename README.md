@@ -29,6 +29,7 @@ gradio-pipeline-directory/
 │   ├── directory.mjs       ← Local suite: cards, modal, versions, theme
 │   ├── live-verify.mjs     ← Live suite against the deployed URL
 │   ├── deploy-flow.mjs     ← HF token + one-click deploy flow
+│   ├── tester.mjs          ← Connects to a live Space and fires a request
 │   ├── linkcheck.py        ← Outbound link audit (HTTP + HF hub index)
 │   ├── linkcheck.test.py   ← Regression test for the HF link oracle
 │   └── artifacts/          ← Screenshots from the last test run
@@ -244,13 +245,40 @@ The modal shows this automatically when the tool's `gradioFile` is not `app.py`.
 
 ## Tester (`tester.html`)
 
-The tester page lets you connect to **any** deployed HF Space via the official `@gradio/client` (loaded from esm.sh). It:
+The tester page lets you connect to **any** deployed HF Space via the official `@gradio/client` (loaded from esm.sh, with a jsDelivr fallback). It:
 1. Connects and reads the Gradio config.
 2. Lists every API endpoint (`api_name`) with input counts and types.
 3. Generates a form for the selected endpoint.
 4. Fires a real request and shows the response.
 
-Try it with `openai/whisper`, `suno/bark`, or any of the quick-pick chips.
+Try it with `suno/bark`, `coqui/xtts`, or any of the quick-pick chips.
+
+**Optional Hugging Face token.** The tester has a token field (stored in
+`localStorage`, sent only to `huggingface.co`). It is needed for private
+Spaces and it lifts the anonymous **ZeroGPU** quota — many modern Gradio
+Spaces run on ZeroGPU and refuse anonymous callers with
+*"You have exceeded your ZeroGPU quota"*.
+
+**Why the client version is pinned to a major.** The tester used to pin
+`@gradio/client@0.20.1`. That release sends every request with
+`credentials: "include"`, which forces a CORS preflight; Hugging Face Spaces
+do not answer preflights with `Access-Control-Allow-Credentials`, so the
+browser blocked the response with *"TypeError: Failed to fetch"*. The tester
+therefore failed against every current (Gradio 6) Space. Client 2.x defaults
+to `credentials: "same-origin"` and works.
+
+**Gradio 6 changed the endpoint shape.** `dependency.inputs` used to be a list
+of component objects; in Gradio 6 it is a list of component **ids**, with the
+definitions in `config.components`. The tester resolves both, so the form
+renders correctly against Gradio 4, 5 and 6 Spaces.
+
+Verify it against a live Space:
+
+```bash
+node e2e/tester.mjs
+# optional: authenticate to lift ZeroGPU quotas
+HF_TOKEN=hf_xxx SPACE_ID=suno/bark node e2e/tester.mjs
+```
 
 ## E2E tests (`e2e/directory.mjs`)
 

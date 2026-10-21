@@ -303,12 +303,22 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
   await page.screenshot({ path: join(ARTIFACTS, 'full-page.png'), fullPage: true });
 
   // Test light theme
+  // The theme is persisted to localStorage, so a previous run (or a previous
+  // visit in the same browser profile) can leave it on 'light' and make this
+  // toggle land on 'dark'. Reset it first, then assert the toggle works.
+  await page.evaluate(() => {
+    localStorage.removeItem('gpd-theme');
+    localStorage.removeItem('gradio-pipeline-directory:version');
+  });
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#results .card', { timeout: 15000 });
+  const themeBefore = await page.evaluate(() => document.documentElement.dataset.theme);
   await page.click('#theme-toggle');
   await new Promise((r) => setTimeout(r, 200));
   const theme = await page.evaluate(() => document.documentElement.dataset.theme);
-  console.log('  → theme toggled to: ' + theme);
-  if (theme !== 'light') {
-    console.error('FAIL: theme toggle did not switch to light');
+  console.log(`  → theme toggled to: ${themeBefore} -> ${theme}`);
+  if (theme === themeBefore || (theme !== 'light' && theme !== 'dark')) {
+    console.error('FAIL: theme toggle did not switch');
     process.exit(1);
   }
   await page.screenshot({ path: join(ARTIFACTS, 'directory-light.png'), fullPage: false });
@@ -316,8 +326,10 @@ const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
   // Test tester page
   console.log('Loading tester.html…');
   const testerResp = await page.goto(URL_BASE + '/tester.html', { waitUntil: 'domcontentloaded', timeout: 30000 });
-  if (!testerResp || !testerResp.ok()) {
-    console.error('FAIL: tester page did not return 2xx. Status:', testerResp ? testerResp.status() : 'no response');
+  // 304 Not Modified is a valid cache hit, not a failure -- anything below
+  // 400 is fine.
+  if (!testerResp || testerResp.status() >= 400) {
+    console.error('FAIL: tester page did not return a usable status. Status:', testerResp ? testerResp.status() : 'no response');
     process.exit(1);
   }
   console.log('  → status ' + testerResp.status());
