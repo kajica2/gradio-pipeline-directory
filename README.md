@@ -76,6 +76,27 @@ Drag-and-drop the folder into [vercel.com/new](https://vercel.com/new). Done.
 
 Point a CNAME to your hosting target and set the `url` field in the deploy provider.
 
+### Social preview card
+
+Shared links render with a preview image instead of a bare text row. The
+card lives at `assets/img/og.png` (1200×630) and is referenced by the
+`og:image` / `twitter:image` tags in `index.html` and `tester.html`.
+
+It is **generated**, not hand-drawn, so it can never drift out of sync with
+the brand:
+
+```bash
+node scripts/make-og-image.mjs   # or: npm run og
+```
+
+The generator renders the card with the same headless Chrome the e2e suites
+use and pulls its colours from the `:root` tokens in `shared/styles.css`.
+Re-run it after changing the brand mark, the headline, or the design tokens,
+then commit the regenerated PNG.
+
+> `og:image` must be an **absolute** URL — scrapers will not resolve a
+> relative path — so it points at the canonical Pages domain.
+
 ---
 
 ## Customize
