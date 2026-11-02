@@ -72,6 +72,47 @@ Then open `http://localhost:5173` (directory) and `http://localhost:5173/tester.
 
 Drag-and-drop the folder into [vercel.com/new](https://vercel.com/new). Done.
 
+### The three live mirrors
+
+This site is published in three places, all serving the same static files:
+
+| Mirror | URL | How it updates |
+|---|---|---|
+| GitHub Pages (canonical) | `https://kajica2.github.io/gradio-pipeline-directory/` | `git push` → Pages rebuilds |
+| Vercel | `https://gradio-pipeline-directory.vercel.app/` | auto-deploys from the GitHub repo |
+| HF Space (static SDK) | `https://kaidjuric-gradio-pipeline-directory.static.hf.space/` | manual sync, see below |
+
+`og:image` and `canonical` point at the **GitHub Pages** URL, so the social
+preview renders correctly even when a HF Space or Vercel URL is the one
+being shared.
+
+The HF Space is a *subset* of the repo — it carries the site files only,
+plus its own `README.md` (Space metadata) and `.gitattributes`. It does
+not carry `e2e/`, `scripts/`, `package.json` or `vercel.json`. To sync it:
+
+```bash
+git clone --depth 1 https://huggingface.co/spaces/kaidjuric/gradio-pipeline-directory /tmp/hf-space
+cd /tmp/hf-space
+cp <repo>/index.html <repo>/tester.html .
+mkdir -p assets/img && cp <repo>/assets/img/og.png assets/img/
+git add index.html tester.html
+git commit -m "feat(seo): add Open Graph + Twitter preview card"
+git push origin main
+```
+
+> **Binaries cannot be pushed over plain git to the Hub.** The pre-receive
+> hook rejects them and asks for Xet storage:
+> *"Your push was rejected because it contains binary files."* Upload any
+> image with the CLI instead, which uses Xet under the hood:
+>
+> ```bash
+> hf upload kaidjuric/gradio-pipeline-directory assets/img/og.png assets/img/og.png \
+>   --repo-type space --commit-message "feat(seo): add social preview card"
+> ```
+>
+> Keep the image out of the git commit in the Space clone, then upload it
+> with `hf upload` as a second commit.
+
 ### Custom domain
 
 Point a CNAME to your hosting target and set the `url` field in the deploy provider.
