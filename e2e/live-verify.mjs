@@ -37,6 +37,55 @@ const hubCards = await page.$$eval('#hub-grid .hub-card, #hub-grid .card', els =
 if (hubCards !== 12) fail(`Expected 12 hub cards, got ${hubCards}`);
 else pass(`12 hub cards rendered (12 sections × version-picker content)`);
 
+// ============ 1b) Social preview meta ============
+// A shared link renders as a bare text row without og:image, so assert the
+// preview card is actually wired up AND that the image it points at is
+// reachable — a 404 og:image is worse than none, because some scrapers
+// cache the broken result.
+log('Testing social preview meta...');
+const meta = await page.evaluate(() => {
+  const get = (sel) => document.querySelector(sel)?.getAttribute('content') || null;
+  return {
+    ogImage: get('meta[property="og:image"]'),
+    ogWidth: get('meta[property="og:image:width"]'),
+    ogHeight: get('meta[property="og:image:height"]'),
+    ogAlt: get('meta[property="og:image:alt"]'),
+    siteName: get('meta[property="og:site_name"]'),
+    twCard: get('meta[name="twitter:card"]'),
+    twImage: get('meta[name="twitter:image"]'),
+  };
+});
+if (!meta.ogImage) fail('og:image meta tag missing');
+else if (!/^https?:\/\//.test(meta.ogImage)) fail(`og:image must be an absolute URL, got: ${meta.ogImage}`);
+else pass(`og:image is absolute: ${meta.ogImage}`);
+if (meta.ogWidth !== '1200' || meta.ogHeight !== '630') fail(`og:image dimensions wrong: ${meta.ogWidth}x${meta.ogHeight}`);
+else pass('og:image is 1200x630');
+if (!meta.ogAlt) fail('og:image:alt missing');
+else pass('og:image:alt present');
+if (!meta.siteName) fail('og:site_name missing');
+else pass('og:site_name present');
+if (meta.twCard !== 'summary_large_image') fail(`twitter:card should be summary_large_image, got: ${meta.twCard}`);
+else pass('twitter:card = summary_large_image');
+if (!meta.twImage) fail('twitter:image missing');
+else pass('twitter:image present');
+
+if (meta.ogImage) {
+  // Plain HTTP check (Node's fetch) rather than a browser request — this is
+  // a URL reachability check, not a page-behaviour check, and it keeps the
+  // assertion independent of the browser context.
+  try {
+    const imgResp = await fetch(meta.ogImage, { redirect: 'follow' });
+    if (!imgResp.ok) fail(`og:image URL returned ${imgResp.status}`);
+    else {
+      const type = imgResp.headers.get('content-type') || '';
+      if (!type.startsWith('image/')) fail(`og:image content-type is ${type}, expected image/*`);
+      else pass(`og:image reachable (${imgResp.status}, ${type})`);
+    }
+  } catch (e) {
+    fail(`og:image URL threw: ${e.message}`);
+  }
+}
+
 // ============ 2) Version picker: 5 personas ============
 log('Testing 5-version picker...');
 // The active lens is persisted to localStorage, so a previous run (or a
