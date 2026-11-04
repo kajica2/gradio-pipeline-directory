@@ -1,0 +1,9 @@
+# Gradio Pipeline Directory
+# Static site, fully public — nothing to hide.
+
+User-agent: *
+Allow: /
+
+# The canonical mirror. Vercel and the HF Space serve identical content;
+# only this one is listed in the sitemap to avoid duplicate-URL noise.
+Sitemap: https://kajica2.github.io/gradio-pipeline-directory/sitemap.xml
