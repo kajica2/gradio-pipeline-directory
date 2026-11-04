@@ -192,6 +192,7 @@
       render();
       renderVersionPicker();
       renderHub();
+      scrollToHash();
       hydrateFromGitHub();
     }).catch(function (err) {
       console.error('Bootstrap failed:', err);
@@ -331,7 +332,18 @@
 
     var head = el('div', { class: 'card__head' }, [
       el('div', null, [
-        el('h3', { class: 'card__title' }, [t._name]),
+        // The title is the card's real control. Putting the button semantics
+        // here (instead of role="button" on the <article>) keeps the card out
+        // of the "interactive control that contains other controls" trap —
+        // the card footer holds a real <a> and a real <button>.
+        el('h3', { class: 'card__title' }, [
+          el('button', {
+            class: 'card__title-btn',
+            type: 'button',
+            'aria-haspopup': 'dialog',
+            onclick: function (e) { e.stopPropagation(); openModal(t); }
+          }, [t._name])
+        ]),
         el('p', { class: 'card__owner' }, [t._owner + '/' + t._repo])
       ])
     ]);
@@ -377,11 +389,9 @@
 
     var card = el('article', {
       class: 'card',
-      tabindex: '0',
-      role: 'button',
-      'aria-label': 'Open ' + t._name + ' details',
-      onclick: function () { openModal(t); },
-      onkeydown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(t); } }
+      // Whole-card click is a mouse convenience only. Keyboard users get the
+      // same action from the title button, which is a real <button>.
+      onclick: function () { openModal(t); }
     }, [thumb, head, desc, meta, topics, foot]);
     return card;
   }
@@ -582,6 +592,9 @@
     if (user) {
       $hfPillLabel.textContent = user.name;
       $hfPillToggle.title = 'Signed in as ' + user.name + ' — click to manage';
+      // The accessible name must contain the visible label ("kai"), and the
+      // visible label is swapped at runtime — so it is kept in sync here.
+      $hfPillToggle.setAttribute('aria-label', user.name + ' — Hugging Face token set');
       $hfPill.classList.add('hf-pill--ready');
       $hfTokenClear.hidden = false;
       $hfTokenStat.textContent = '✓ signed in as ' + user.name;
@@ -589,6 +602,7 @@
     } else {
       $hfPillLabel.textContent = 'HF';
       $hfPillToggle.title = 'Set your Hugging Face token to deploy from the browser';
+      $hfPillToggle.setAttribute('aria-label', 'HF token — set your Hugging Face token');
       $hfPill.classList.remove('hf-pill--ready');
       $hfTokenClear.hidden = true;
     }
@@ -1009,7 +1023,14 @@
     })[s.kind] || 'items';
     var thumb = el('div', { class: 'hub-card__thumb ' + gradClassByName(s.id) + ' hub-card__thumb--' + s.kind }, [s.icon || '◇']);
     var head = el('div', { class: 'hub-card__head' }, [
-      el('h3', { class: 'hub-card__title' }, [s.title])
+      el('h3', { class: 'hub-card__title' }, [
+        el('button', {
+          class: 'hub-card__title-btn',
+          type: 'button',
+          'aria-haspopup': 'dialog',
+          onclick: function (e) { e.stopPropagation(); openSectionModal(s); }
+        }, [s.title])
+      ])
     ]);
     var taglineEl = el('p', { class: 'hub-card__tagline' }, [tagline]);
     var meta = el('div', { class: 'hub-card__meta' }, [
@@ -1018,11 +1039,10 @@
     ]);
     var card = el('article', {
       class: 'hub-card',
-      tabindex: '0',
-      role: 'button',
-      'aria-label': 'Open ' + s.title + ' section',
-      onclick: function () { openSectionModal(s); },
-      onkeydown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openSectionModal(s); } }
+      // Each section gets a real id so it can be deep-linked
+      // (…/#papers) and listed in sitemap.xml.
+      id: s.id,
+      onclick: function () { openSectionModal(s); }
     }, [thumb, head, taglineEl, meta]);
     return card;
   }
@@ -1034,6 +1054,19 @@
     state.sections.forEach(function (s) { frag.appendChild(buildHubCard(s)); });
     $hubGrid.appendChild(frag);
   }
+
+  // The hub cards are rendered *after* the browser has already tried to
+  // resolve the URL fragment, so a deep link (…/#papers) needs a second pass.
+  function scrollToHash() {
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (!hash) return;
+    var target = document.getElementById(hash);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('is-highlighted');
+    setTimeout(function () { target.classList.remove('is-highlighted'); }, 2400);
+  }
+  window.addEventListener('hashchange', scrollToHash);
 
   function openSectionModal(s) {
     var block = getActiveVersionBlock(s);

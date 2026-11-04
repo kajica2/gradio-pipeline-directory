@@ -19,8 +19,16 @@
   /* Text */
   --text:         #e8eaf2;
   --text-dim:     #9ea4b8;
-  --text-faint:   #6b7187;
+  /* #6b7187 only reached 3.63:1 on the raised panels (--code-bg) — below the
+     4.5:1 WCAG AA floor for 11px text. #828a9e clears 4.5:1 on every
+     background this token is used on, and still reads as dimmer than
+     --text-dim. */
+  --text-faint:   #828a9e;
   --text-inverse: #0a0b10;
+  /* Label colour for the bright persona fills (the version pills). Those
+     fills are the same in both themes, so the label stays dark in both —
+     white on them would be 1.76:1 to 2.65:1. */
+  --on-bright:    #0a0b10;
 
   /* Accent (teal) */
   --accent:       #7dd3c0;
@@ -32,10 +40,12 @@
   /* Status */
   --status-ok-fg: #4ade80;
   --status-ok-bg: rgba(74, 222, 128, 0.10);
+  --status-ok-border: rgba(74, 222, 128, 0.30);
   --status-warn-fg:#fbbf24;
   --status-warn-bg:rgba(251, 191, 36, 0.10);
   --status-err-fg:#f87171;
   --status-err-bg:rgba(248, 113, 113, 0.10);
+  --status-err-border: rgba(248, 113, 113, 0.30);
   --status-info-fg:#60a5fa;
   --status-info-bg:rgba(96, 165, 250, 0.10);
 
@@ -86,8 +96,29 @@
   --border-soft:  #ebeef3;
   --text:         #0a0b10;
   --text-dim:     #4a4f5e;
-  --text-faint:   #828999;
+  /* Same AA floor as the dark theme: #828999 reached only 3.16:1 on the
+     light code panel. #676e7d clears 4.5:1 on every light surface. */
+  --text-faint:   #676e7d;
   --text-inverse: #ffffff;
+  /* Deliberately not flipped: the persona fills stay bright in both themes. */
+  --on-bright:    #0a0b10;
+  /* The light theme has to re-declare the accent. Inheriting the dark
+     theme's mint (#7dd3c0) put accent-coloured text on a near-white
+     surface at 1.47:1, and put white button labels on it at 1.76:1.
+     These two are dark enough for white text on top of them (5.47:1 and
+     7.58:1) and clear 4.5:1 as text on every light surface. */
+  --accent:       #0f766e;
+  --accent-2:     #115e59;
+  --status-ok-fg:   #166534;
+  --status-ok-bg:   rgba(22, 101, 52, 0.10);
+  --status-ok-border: rgba(22, 101, 52, 0.30);
+  --status-warn-fg: #92400e;
+  --status-warn-bg: rgba(146, 64, 14, 0.10);
+  --status-err-fg:  #b91c1c;
+  --status-err-bg:  rgba(185, 28, 28, 0.10);
+  --status-err-border: rgba(185, 28, 28, 0.30);
+  --status-info-fg: #1d4ed8;
+  --status-info-bg: rgba(29, 78, 216, 0.10);
   --accent-dim:   rgba(13, 148, 124, 0.10);
   --accent-border:rgba(13, 148, 124, 0.30);
   --accent-glow:  rgba(13, 148, 124, 0.18);
@@ -635,6 +666,35 @@ code, pre {
   color: var(--text);
   word-break: break-word;
 }
+/* The title doubles as the card's control. Reset it to look like plain
+   heading text so the design is unchanged, but keep it a real button —
+   and keep it at least 24px tall so it is a valid pointer target. */
+.card__title-btn,
+.hub-card__title-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.card__title-btn:hover,
+.hub-card__title-btn:hover {
+  color: var(--accent);
+}
+.card__title-btn:focus-visible,
+.hub-card__title-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 .card__owner {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -722,6 +782,11 @@ code, pre {
   font-size: var(--fs-xs);
   color: var(--text-faint);
   text-decoration: none;
+  /* WCAG 2.2 target size: the link was a 16.5px-tall text run. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 0;
 }
 .card__link:hover { color: var(--accent); text-decoration: none; }
 
@@ -1110,8 +1175,8 @@ code, pre {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.response--ok { color: var(--status-ok-fg); border-color: rgba(74, 222, 128, 0.3); }
-.response--err { color: var(--status-err-fg); border-color: rgba(248, 113, 113, 0.3); }
+.response--ok { color: var(--status-ok-fg); border-color: var(--status-ok-border); }
+.response--err { color: var(--status-err-fg); border-color: var(--status-err-border); }
 
 .notice {
   padding: var(--s-3) var(--s-4);
@@ -1125,6 +1190,13 @@ code, pre {
   margin-bottom: var(--s-4);
 }
 .notice strong { color: var(--accent); }
+/* Links inside a paragraph must not rely on colour alone to stand out
+   (WCAG 1.4.1) — the accent teal sits at 1.46:1 against the body text. */
+.notice a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
 
 .log {
   background: var(--code-bg);
@@ -1417,6 +1489,12 @@ code, pre {
   color: var(--text);
   letter-spacing: -0.01em;
 }
+/* Flashes the target of a deep link (…/#papers) so the visitor sees where
+   the fragment landed. */
+.hub-card.is-highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
 .hub-card__tagline {
   font-size: var(--fs-sm);
   color: var(--text-dim);
@@ -1579,7 +1657,7 @@ code, pre {
 .version-pill__icon { font-size: 14px; line-height: 1; }
 .version-pill.is-active {
   background: var(--pill-color);
-  color: var(--text-inverse);
+  color: var(--on-bright);
   border-color: var(--pill-color);
   font-weight: 600;
 }
@@ -1618,7 +1696,7 @@ code, pre {
 .hub-modal__switcher-pill:hover { color: var(--text); border-color: var(--border-strong); }
 .hub-modal__switcher-pill.is-active {
   background: var(--pill-color, var(--accent));
-  color: var(--text-inverse);
+  color: var(--on-bright);
   border-color: var(--pill-color, var(--accent));
   font-weight: 600;
 }
