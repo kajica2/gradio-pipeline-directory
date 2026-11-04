@@ -27,16 +27,45 @@ gradio-pipeline-directory/
 ├── e2e/                    ← Puppeteer test suite + link audit
 │   ├── browser.mjs         ← Launcher: local Chrome, or attach to a running one
 │   ├── directory.mjs       ← Local suite: cards, modal, versions, theme
+│   ├── a11y.mjs            ← Accessibility regression suite (both themes)
 │   ├── live-verify.mjs     ← Live suite against the deployed URL
 │   ├── deploy-flow.mjs     ← HF token + one-click deploy flow
 │   ├── tester.mjs          ← Connects to a live Space and fires a request
 │   ├── linkcheck.py        ← Outbound link audit (HTTP + HF hub index)
 │   ├── linkcheck.test.py   ← Regression test for the HF link oracle
 │   └── artifacts/          ← Screenshots from the last test run
+├── robots.txt              ← Crawl policy + sitemap pointer
+├── sitemap.xml             ← 16 URLs: the 2 pages, the 2 sections, 12 hub sections
 ├── .github/ISSUE_TEMPLATE/
 │   └── submit-tool.md      ← Backs the "Submit a tool" CTA
 └── README.md
 ```
+
+### Accessibility
+
+The site targets **WCAG 2.1 AA** and scores 100 on all four Lighthouse
+categories (Accessibility, Best Practices, SEO, and Agentic Browsing) in
+both themes.
+
+A few things worth knowing if you edit the styles:
+
+- `--text-faint` is the dimmest text token. In **both** themes it has to
+  clear 4.5:1 on every surface it lands on — the code panel is the worst
+  case, not the page background.
+- The **light theme re-declares `--accent` and `--accent-2`** (dark teal,
+  not the mint used on dark backgrounds). Without that, accent-coloured
+  text on a near-white surface sits at 1.47:1, and white button labels on
+  the accent sit at 1.76:1.
+- `--on-bright` is the label colour for the bright persona fills (the
+  version pills). Those fills are identical in both themes, so the label
+  stays dark in both — white on them would be 1.76:1 to 2.65:1.
+- The card title is a real `<button>` with `aria-haspopup="dialog"`, not
+  `role="button"` on the `<article>`. The card footer holds a real `<a>`
+  and a real `<button>`, and wrapping those in another button produces a
+  malformed accessibility tree.
+
+Run `npm run e2e:a11y` after any style change — it checks both themes and
+fails loudly on contrast regressions.
 
 ---
 
@@ -93,12 +122,17 @@ not carry `e2e/`, `scripts/`, `package.json` or `vercel.json`. To sync it:
 ```bash
 git clone --depth 1 https://huggingface.co/spaces/kaidjuric/gradio-pipeline-directory /tmp/hf-space
 cd /tmp/hf-space
-cp <repo>/index.html <repo>/tester.html .
+cp <repo>/index.html <repo>/tester.html <repo>/robots.txt <repo>/sitemap.xml .
 mkdir -p assets/img && cp <repo>/assets/img/og.png assets/img/
-git add index.html tester.html
+git add index.html tester.html robots.txt sitemap.xml
 git commit -m "feat(seo): add Open Graph + Twitter preview card"
 git push origin main
 ```
+
+> The Space also serves the site's `shared/` and `data/` directories — copy
+> them too, or the page renders without styles and with no cards. The full
+> set of files the Space needs is: `index.html`, `tester.html`,
+> `robots.txt`, `sitemap.xml`, `shared/`, `data/`, `assets/img/og.png`.
 
 > **Binaries cannot be pushed over plain git to the Hub.** The pre-receive
 > hook rejects them and asks for Xet storage:
@@ -371,6 +405,40 @@ URL_BASE=http://localhost:5179 node e2e/directory.mjs
 ```
 
 Test artifacts (screenshots) land in `e2e/artifacts/`.
+
+### Accessibility regression suite (`e2e/a11y.mjs`)
+
+Lighthouse only audits the theme the page loads with, so the light theme used
+to ship with contrast failures that no audit was looking at. This suite
+checks **both themes** explicitly, and locks in the fixes for the four
+accessibility audits that were failing on the deployed site:
+
+```bash
+python3 -m http.server 5173 &
+npm run e2e:a11y
+
+# or against a deployed mirror:
+A11Y_BASE=https://kajica2.github.io/gradio-pipeline-directory node e2e/a11y.mjs
+```
+
+It asserts:
+
+1. **Contrast** — every text node in the dark *and* light theme clears WCAG
+   AA (4.5:1 for small text, 3:1 for large), computed against the real
+   composited background.
+2. **Accessible names** — every control's `aria-label` contains its visible
+   text (the `label-content-name-mismatch` rule).
+3. **No nested controls** — nothing carries `role="button"` while wrapping
+   another `<a>`/`<button>`. This is what made the accessibility tree
+   malformed and dropped Lighthouse's *Agentic Browsing* score to 50.
+4. **Card title is a real `<button>`** with `aria-haspopup="dialog"`, and
+   `Enter` on it opens the detail modal.
+5. **Touch targets** — card and hub controls are at least 24 px tall
+   (WCAG 2.2 target size).
+6. **In-paragraph links** carry a non-colour cue.
+7. **Hub deep links** (`/#papers`) resolve and scroll into view.
+8. **`robots.txt` + `sitemap.xml`** are served, and every sitemap anchor
+   resolves to a real element on the page.
 
 ### Against the live site
 
