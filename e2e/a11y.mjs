@@ -315,6 +315,9 @@ for (const path of ['/robots.txt', '/sitemap.xml']) {
 
 // A sitemap URL must not point at an anchor that does not exist.
 await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+// The hub cards are rendered from a fetched JSON file, so they are not in the
+// DOM yet at domcontentloaded — wait for them before checking the anchors.
+await page.waitForSelector('#hub-grid .hub-card', { timeout: 15000 });
 const sm = await page.evaluate(async () => {
   const xml = await (await fetch('sitemap.xml')).text();
   const locs = [...xml.matchAll(/<loc>([^#]+)(?:#([^<]+))?<\/loc>/g)].map(m => ({ url: m[1], hash: m[2] }));
