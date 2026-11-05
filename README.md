@@ -26,6 +26,7 @@ gradio-pipeline-directory/
 │   └── requirements.txt
 ├── e2e/                    ← Puppeteer test suite + link audit
 │   ├── browser.mjs         ← Launcher: local Chrome, or attach to a running one
+│   ├── serve.mjs           ← Boots the suite's own static server + identity guard
 │   ├── directory.mjs       ← Local suite: cards, modal, versions, theme
 │   ├── a11y.mjs            ← Accessibility regression suite (both themes)
 │   ├── live-verify.mjs     ← Live suite against the deployed URL
@@ -396,11 +397,26 @@ The repo ships a Puppeteer test suite that runs against a local server. It verif
 14. `tester.html` loads with ≥1 quick-pick chip
 
 ```bash
-# In one terminal:
-cd gradio-pipeline-directory
-python3 -m http.server 5179
+npm run e2e
+```
 
-# In another:
+The suite **starts its own static server** on a free ephemeral port, rooted at
+the repo, so there is nothing to start by hand and no chance of colliding
+with another project's dev server. Before it evaluates a single assertion it
+checks that the port really is serving this project — if something else
+answers there, the run fails immediately with that name instead of a
+confusing selector timeout:
+
+```
+identity check failed: http://localhost:5173/ is not the Gradio Pipeline
+Directory (title was "digital_twin"). Something else is serving this port
+— refusing to run assertions against it.
+```
+
+To run against a server you started yourself (a mirror, or a mirror of the
+build), point `URL_BASE` at it — the identity check still applies:
+
+```bash
 URL_BASE=http://localhost:5179 node e2e/directory.mjs
 ```
 
@@ -414,8 +430,10 @@ checks **both themes** explicitly, and locks in the fixes for the four
 accessibility audits that were failing on the deployed site:
 
 ```bash
-python3 -m http.server 5173 &
 npm run e2e:a11y
+
+# both local suites in one go:
+npm run e2e:all
 
 # or against a deployed mirror:
 A11Y_BASE=https://kajica2.github.io/gradio-pipeline-directory node e2e/a11y.mjs

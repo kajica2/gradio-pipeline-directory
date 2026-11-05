@@ -2,8 +2,13 @@
 // open a modal, confirm the deploy command is present, then screenshot.
 //
 // Usage:  node e2e/directory.mjs
-// Expects the static server to already be running on http://localhost:5173
-//   (run `python3 -m http.server 5173` from the project root first).
+// The suite boots its own static server on a free port, so no manual
+//   `python3 -m http.server` step is needed — and it can never end up
+//   testing whatever else happens to be listening on a well-known port.
+//
+//   URL_BASE=http://localhost:5179 node e2e/directory.mjs
+//     runs against an already-running server instead (a mirror, or a
+//     server you started yourself). The identity check still applies.
 
 import { createRequire } from 'module';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
@@ -15,13 +20,21 @@ const projectRoot = join(__dirname, '..');
 
 const require = createRequire(import.meta.url);
 const { launch } = await import('./browser.mjs');
+const { startServer, assertThisSite, PROJECT_ROOT } = await import('./serve.mjs');
 
 const ARTIFACTS = join(projectRoot, 'e2e', 'artifacts');
 if (!existsSync(ARTIFACTS)) mkdirSync(ARTIFACTS, { recursive: true });
 
-const URL_BASE = process.env.URL_BASE || 'http://localhost:5173';
-
 (async () => {
+  const server = process.env.URL_BASE ? null : await startServer();
+  const URL_BASE = process.env.URL_BASE || server.base;
+  if (server) {
+    console.log(`Serving ${PROJECT_ROOT} at ${URL_BASE}`);
+    process.on('exit', () => server.stop());
+  }
+  const title = await assertThisSite(URL_BASE, '/');
+  console.log(`Identity check OK — serving "${title}"`);
+
   console.log('Launching headless Chrome…');
   const browser = await launch();
   const page = await browser.newPage();

@@ -18,13 +18,22 @@
 // accessibility tree, which is what dropped Agentic Browsing to 50.
 //
 // Usage:
-//   node e2e/a11y.mjs                 # against http://localhost:5173
+//   node e2e/a11y.mjs                 # boots its own server on a free port
 //   A11Y_BASE=https://host/ node e2e/a11y.mjs   # against a deployed mirror
 import { launch } from './browser.mjs';
+import { startServer, assertThisSite, PROJECT_ROOT } from './serve.mjs';
 import { mkdir } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const BASE = process.env.A11Y_BASE || 'http://localhost:5173';
-const ART = '/Users/kaidejuricmasscmbook/.minimax/workspace/gradio-pipeline-directory/e2e/artifacts';
+const server = process.env.A11Y_BASE ? null : await startServer();
+const BASE = process.env.A11Y_BASE || server.base;
+if (server) {
+  console.log(`[a11y] Serving ${PROJECT_ROOT} at ${BASE}`);
+  process.on('exit', () => server.stop());
+}
+
+const ART = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
 await mkdir(ART, { recursive: true });
 
 const log = (...a) => console.log('[a11y]', ...a);
@@ -37,6 +46,12 @@ const page = await browser.newPage();
 await page.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 });
 page.setDefaultNavigationTimeout(60000);
 page.setDefaultTimeout(20000);
+
+// Refuse to audit a port that is serving some other project.
+{
+  const title = await assertThisSite(BASE, '/');
+  log(`Identity check OK — serving "${title}"`);
+}
 
 // ---------------------------------------------------------------------------
 // Page-side helpers. Injected once, reused for every theme.
@@ -333,11 +348,16 @@ else fail(`sitemap references ${sm.missing.length} missing anchor(s): ${sm.missi
 
 // ---------------------------------------------------------------------------
 log('');
-if (failures === 0) {
+const failed = failures > 0;
+if (!failed) {
   console.log('  ✅ ALL A11Y CHECKS PASSED');
 } else {
   console.error(`  ❌ ${failures} a11y check(s) failed`);
-  process.exitCode = 1;
 }
 
 await browser.close();
+
+// Exit explicitly. A lingering CDP connection or the suite's own static
+// server can keep the event loop alive after the last check, and a test
+// runner that never returns is a hung CI job, not a passing one.
+process.exit(failed ? 1 : 0);

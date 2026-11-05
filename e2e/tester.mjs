@@ -10,10 +10,13 @@
 //   node e2e/tester.mjs                       # against the live GitHub Pages site
 //   URL_BASE=http://localhost:5173 node e2e/tester.mjs
 import { launch } from './browser.mjs';
+import { assertThisSite } from './serve.mjs';
 import { mkdir } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const BASE = process.env.URL_BASE || 'https://kajica2.github.io/gradio-pipeline-directory';
-const ART = '/Users/kaidejuricmasscmbook/.minimax/workspace/gradio-pipeline-directory/e2e/artifacts';
+const ART = join(dirname(fileURLToPath(import.meta.url)), 'artifacts');
 await mkdir(ART, { recursive: true });
 
 // A small, public, always-on Gradio Space.
@@ -38,6 +41,12 @@ const pageErrors = [];
 page.on('pageerror', (e) => pageErrors.push(String(e.message)));
 
 log(`Testing tester.html at ${BASE} against Space ${TARGET}`);
+
+// Refuse to test a port that is serving some other project.
+{
+  const title = await assertThisSite(BASE, '/tester.html');
+  log(`Identity check OK — serving "${title}"`);
+}
 
 // 1) Page loads
 const resp = await page.goto(BASE + '/tester.html', { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -173,8 +182,11 @@ if (pageErrors.length) {
 console.log();
 if (failed) {
   console.error(`❌ ${failed} CHECK(S) FAILED`);
-  process.exitCode = 1;
 } else {
   console.log('✅ ALL TESTER CHECKS PASSED');
 }
 await browser.close();
+
+// Exit explicitly: a lingering CDP connection can keep the event loop alive
+// after the last check, and a runner that never returns is a hung CI job.
+process.exit(failed ? 1 : 0);
