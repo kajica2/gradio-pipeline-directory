@@ -115,6 +115,29 @@ log(`Checking contrast in both themes @ ${BASE}`);
 for (const theme of ['dark', 'light']) {
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForSelector('#results .card', { timeout: 15000 });
+
+  // Freeze every CSS transition and animation BEFORE switching the theme.
+  //
+  // Flipping data-theme re-resolves every colour token, and the nav links
+  // carry `transition: all var(--t-fast)` (120ms). A wall-clock wait is
+  // not animation time: in headless Chrome the animation clock only
+  // advances when a frame is actually produced, so after a 250ms wait the
+  // accent was still ~16% of the way from the dark mint to the light
+  // teal. The suite was therefore measuring a half-faded colour and
+  // reporting a contrast failure that does not exist in the settled
+  // theme — a false positive that would send someone to "fix" a colour
+  // token that was already correct.
+  //
+  // With transitions off the theme change is atomic, so what we measure
+  // is what a user actually sees once the switch has settled.
+  await page.evaluate(() => {
+    const s = document.createElement('style');
+    s.id = 'a11y-freeze-transitions';
+    s.textContent =
+      '*, *::before, *::after { transition: none !important; animation: none !important; }';
+    document.head.appendChild(s);
+  });
+
   await page.evaluate((t) => {
     document.documentElement.setAttribute('data-theme', t);
   }, theme);

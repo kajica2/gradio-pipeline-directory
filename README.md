@@ -64,6 +64,20 @@ A few things worth knowing if you edit the styles:
   `role="button"` on the `<article>`. The card footer holds a real `<a>`
   and a real `<button>`, and wrapping those in another button produces a
   malformed accessibility tree.
+- Switching `data-theme` re-resolves every colour token, and 21 rules
+  carry `transition: all var(--t-fast)` (120ms). Mid-fade the light
+  theme's accent reads as a pale mint at roughly 1.8:1 against the light
+  surface. That is a transient, not a WCAG failure, but a flash of
+  low-contrast text is exactly what a motion-sensitive reader should not
+  get — so `prefers-reduced-motion: reduce` turns the cross-fade off
+  entirely (see the reduced-motion block in `shared/styles.css`).
+- `npm run e2e:a11y` **freezes transitions before it measures contrast**.
+  Do not remove that: headless Chrome's animation clock only advances
+  when a frame is produced, so a 250ms wall-clock wait is not 250ms of
+  animation. Without the freeze the suite samples a half-faded colour
+  and reports a contrast failure that does not exist in the settled
+  theme — a false positive that sends someone to "fix" a token that was
+  already correct.
 
 Run `npm run e2e:a11y` after any style change — it checks both themes and
 fails loudly on contrast regressions.

@@ -1939,3 +1939,30 @@ code, pre {
   .deploy-form__row { flex-direction: column; align-items: stretch; }
   .deploy-form select { width: 100%; }
 }
+
+/* =================================================================
+   Reduced motion
+   =================================================================
+   The theme toggle re-resolves every colour token, and 21 rules carry
+   `transition: all var(--t-fast)`. During that cross-fade the text
+   colour passes through intermediate values that do NOT clear WCAG AA
+   against the new surface: the light theme's accent is #0f766e (5.1:1
+   on #f7f8fa) but mid-fade it reads as a pale mint at roughly 1.8:1.
+   It lasts 120ms, so it is a transient and not a WCAG failure — but a
+   flash of low-contrast text is exactly what a motion-sensitive reader
+   should not get.
+
+   Honouring prefers-reduced-motion removes the cross-fade entirely:
+   the theme switch becomes an instant swap, so the colours a user
+   lands on are the settled, compliant ones.
+
+   The duration is 0.01ms rather than 0 on purpose — transitionend and
+   animationend still fire, so any JS waiting on them is not stranded.
+   ================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

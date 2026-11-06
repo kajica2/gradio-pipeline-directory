@@ -1062,7 +1062,14 @@
     if (!hash) return;
     var target = document.getElementById(hash);
     if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // A CSS rule cannot override a JS `behavior: 'smooth'` option, so the
+    // reduced-motion preference has to be honoured here as well. See the
+    // prefers-reduced-motion block in shared/styles.css.
+    var reduceMotion = false;
+    try {
+      reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
     target.classList.add('is-highlighted');
     setTimeout(function () { target.classList.remove('is-highlighted'); }, 2400);
   }

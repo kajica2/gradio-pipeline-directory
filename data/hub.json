@@ -478,7 +478,7 @@
             { "text": "Three.js — getting started", "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene", "tag": "three" },
             { "text": "p5.js — getting started", "url": "https://p5js.org/tutorials/get-started/", "tag": "p5" },
             { "text": "The Book of Shaders — Patricio Gonzalez Vivo", "url": "https://thebookofshaders.com/", "tag": "shader" },
-            { "text": "Lygia — shader std lib documentation", "url": "https://lygia.xyz/", "tag": "shader" }
+            { "text": "Lygia — shader std lib, docs in the repo README", "url": "https://github.com/patriciogonzalezvivo/lygia", "tag": "shader" }
           ]
         },
         "director": {
