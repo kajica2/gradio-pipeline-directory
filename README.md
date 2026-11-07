@@ -118,7 +118,8 @@ Drag-and-drop the folder into [vercel.com/new](https://vercel.com/new). Done.
 
 ### The three live mirrors
 
-This site is published in three places, all serving the same static files:
+This site is published in three places, all serving the same static files
+(with one platform exception, documented below):
 
 | Mirror | URL | How it updates |
 |---|---|---|
@@ -129,6 +130,32 @@ This site is published in three places, all serving the same static files:
 `og:image` and `canonical` point at the **GitHub Pages** URL, so the social
 preview renders correctly even when a HF Space or Vercel URL is the one
 being shared.
+
+**The one exception: the HF Space's `/robots.txt`.** Hugging Face's
+static-Space runtime serves *its own* `robots.txt` at that path and ignores
+the copy committed to the Space repo — the Space answers with HF's 23-byte
+default (`User-agent: *` / `Allow: /`) while its repo file is the 319-byte
+version with the `Sitemap:` pointer. This was verified against an unrelated
+public static Space (`advafzal/afzal-space`) that has its own custom
+`robots.txt` and is served the same default, so it is platform behaviour
+rather than a sync gap, and pushing a different `robots.txt` does not change
+it. The committed copy is still correct and is what Pages and Vercel serve;
+the shadow is harmless (the default is permissive, and this mirror is
+deliberately *not* listed in the sitemap to avoid duplicate-URL noise).
+
+**Check that the mirrors have not drifted.** The Space is the only mirror
+that does not update on `git push`, so it is the one that can silently go
+stale. Compare all three against the working tree:
+
+```bash
+npm run e2e:mirrors
+```
+
+It fetches every served file from every mirror and compares it byte-for-byte
+with the repo (normalising the script HF injects into `<head>`), reports the
+`robots.txt` shadow as information, and exits non-zero on a real mismatch —
+so a served file that was pushed but never copied to the Space turns the
+check red instead of going unnoticed.
 
 The HF Space is a *subset* of the repo — it carries the site files only,
 plus its own `README.md` (Space metadata) and `.gitattributes`. It does
@@ -148,6 +175,11 @@ git push origin main
 > them too, or the page renders without styles and with no cards. The full
 > set of files the Space needs is: `index.html`, `tester.html`,
 > `robots.txt`, `sitemap.xml`, `shared/`, `data/`, `assets/img/og.png`.
+>
+> `robots.txt` is in that list for completeness — it is committed to the
+> Space repo and shows up in the Space's raw file listing, but the platform
+> serves its own `robots.txt` over it (see "The three live mirrors" above),
+> so copying it changes nothing that is visible.
 
 > **Binaries cannot be pushed over plain git to the Hub.** The pre-receive
 > hook rejects them and asks for Xet storage:
@@ -478,6 +510,7 @@ It asserts:
 npm install                # once — pulls puppeteer-core (no Chromium download)
 node e2e/live-verify.mjs   # hits the deployed URL
 node e2e/deploy-flow.mjs   # HF token + one-click deploy flow
+npm run e2e:mirrors        # all three mirrors vs. the working tree
 ```
 
 The launcher (`e2e/browser.mjs`) prefers the system Chrome and falls back to
