@@ -3,8 +3,8 @@
 
 Checks every outbound URL in data/*.json against the live web and reports
 status codes. Distinguishes hard 404s from soft failures (403 bot walls,
-429 rate limits, timeouts) so a blocked fetch is never mistaken for a dead
-link -- and a real 404 is never waved through.
+429 rate limits, 5xx gateway errors, timeouts) so a blocked fetch is never
+mistaken for a dead link -- and a real 404 is never waved through.
 
 Hugging Face needs special handling. HF serves an *unauthenticated* web page
 for public repos (200) but answers 401 for BOTH gated repos and repos that do
@@ -45,6 +45,13 @@ SOFT_BLOCK_HOSTS = {
     "silero.ai",
     "zenodo.org",
 }
+
+# Statuses that describe the *server's* state rather than the link's
+# existence. A burst of checks can trip them (GitHub answers 504 gateway
+# timeouts when it is busy), so they are retried and then reported as soft
+# failures. Reporting them as dead links sends whoever reads the report
+# chasing links that are perfectly fine.
+TRANSIENT_STATUS = {429, 500, 502, 503, 504}
 
 # Placeholder fragments used in documentation strings, not real links.
 PLACEHOLDER_MARKERS = ("OWNER/REPO", "YOUR_", "owner/repo", "<your", "example.com")
@@ -154,6 +161,26 @@ def hf_exists(url):
     return False, "not-in-hub-index"
 
 
+# Notes that mean "could not verify", as opposed to "does not exist".
+SOFT_NOTES = {"bot-wall", "rate-limited", "server-error"}
+
+
+def classify_status(status, host, note):
+    """Turn a raw HTTP status into a liveness note.
+
+    A status that describes the server's state rather than the link's
+    existence is soft: a blocked fetch or a busy upstream says nothing about
+    whether the target is still there.
+    """
+    if status == 429:
+        return "rate-limited"
+    if status in (401, 403) and host in SOFT_BLOCK_HOSTS:
+        return "bot-wall"
+    if status is not None and status >= 500:
+        return "server-error"
+    return note
+
+
 def check(url, timeout=25, retries=2):
     """Return (url, status, final_url, note). status is an int or None."""
     host = urllib.parse.urlparse(url).netloc.lower()
@@ -173,7 +200,9 @@ def check(url, timeout=25, retries=2):
                 return url, resp.status, resp.geturl(), "ok"
         except urllib.error.HTTPError as exc:
             last = (url, exc.code, exc.geturl(), "http-error")
-            if exc.code != 429:
+            # Retry throttling and server-side errors: they say nothing about
+            # whether the target exists, and a burst of checks can trip them.
+            if exc.code not in TRANSIENT_STATUS:
                 break
         except urllib.error.URLError as exc:
             last = (url, None, None, f"urlerror:{exc.reason}")
@@ -183,11 +212,7 @@ def check(url, timeout=25, retries=2):
             time.sleep(1.5 * (attempt + 1))
 
     url, status, final, note = last
-    if status == 429:
-        note = "rate-limited"
-    elif status in (401, 403) and host in SOFT_BLOCK_HOSTS:
-        note = "bot-wall"
-    return url, status, final, note
+    return url, status, final, classify_status(status, host, note)
 
 
 def audit_url(url):
@@ -199,7 +224,8 @@ def audit_url(url):
          repos, so this also covers renames)
       3. a 401 on a HF repo URL is ambiguous -- the listing API decides
          between "exists but gated" and "deleted"
-      4. everything else is dead unless it is a known bot-wall
+      4. a 5xx is the server's state, not the link's -- it is soft, not dead
+      5. everything else is dead unless it is a known bot-wall
     """
     if is_placeholder(url):
         return url, None, None, "placeholder"
@@ -294,13 +320,13 @@ def main():
             placeholders.append(url)
         elif status and status < 400:
             ok.append((url, status, final))
-        elif note in ("bot-wall", "rate-limited"):
+        elif note in SOFT_NOTES:
             soft.append((url, status, final, note))
         else:
             dead.append((url, status, final, note))
 
     print(f"OK            : {len(ok)}")
-    print(f"SOFT (wall)   : {len(soft)}")
+    print(f"SOFT          : {len(soft)}")
     print(f"DEAD          : {len(dead)}")
     print(f"PLACEHOLDER   : {len(placeholders)}")
     print()
@@ -315,9 +341,14 @@ def main():
         print()
 
     if soft:
-        print("=== SOFT (not verified by bot -- confirm in a browser) ===")
+        print("=== SOFT (blocked or transient -- not proof of a dead link) ===")
+        by_note = {}
         for url, status, final, note in soft:
-            print(f"  [{status}] {note}  {url}")
+            by_note.setdefault(note, []).append((url, status, final))
+        for note, entries in sorted(by_note.items()):
+            print(f"  [{note}] {len(entries)} URL(s)")
+            for url, status, final in entries:
+                print(f"     {str(status or 'ERR'):>4}  {url}")
         print()
 
     if placeholders:

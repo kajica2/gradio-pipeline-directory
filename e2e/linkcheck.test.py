@@ -11,6 +11,12 @@ previous revision of this site shipped four links in exactly that blind spot
 
 These cases pin the behaviour of the listing-API oracle.
 
+A second group pins the status classifier: a server-side failure (5xx) or a
+throttling response (429) describes the *server's* state, not the link's
+existence. GitHub answers 504 gateway timeouts when it is busy, and the
+audit once reported 57 such links as dead -- a phantom breakage report that
+points at 57 perfectly healthy URLs.
+
 Run:  python3 e2e/linkcheck.test.py
 """
 
@@ -44,8 +50,42 @@ CASES = [
 ]
 
 
+# (status, host, expected note)
+CLASSIFY_CASES = [
+    # A busy upstream says nothing about the link -> soft, not dead.
+    (504, "github.com", "server-error"),
+    (503, "github.com", "server-error"),
+    (500, "example.com", "server-error"),
+    # Throttling -> soft.
+    (429, "github.com", "rate-limited"),
+    # A known bot wall -> soft; an unknown 403 stays a hard failure.
+    (403, "openai.com", "bot-wall"),
+    (403, "zenodo.org", "bot-wall"),
+    (403, "example.com", "http-error"),
+    # A real 404 is never waved through.
+    (404, "github.com", "http-error"),
+    (410, "github.com", "http-error"),
+]
+
+
 def main():
     failures = 0
+
+    print("--- status classifier (no network) ---")
+    for status, host, expected in CLASSIFY_CASES:
+        got = lc.classify_status(status, host, "http-error")
+        soft = got in lc.SOFT_NOTES
+        want_soft = expected in lc.SOFT_NOTES
+        mark = "PASS" if (got == expected and soft == want_soft) else "FAIL"
+        if mark == "FAIL":
+            failures += 1
+        print(
+            f"  [{mark}] status={status} host={host:<14} note={got:<14} "
+            f"{'soft' if soft else 'dead'}"
+        )
+
+    print()
+    print("--- HF listing-API oracle (network) ---")
     width = max(len(u) for u, _ in CASES)
     for url, expected in CASES:
         _, status, _, note = lc.audit_url(url)
@@ -56,10 +96,11 @@ def main():
         print(f"  [{mark}] got={got:<7} want={expected:<7} {url.ljust(width)}  {note}")
 
     print()
+    total = len(CLASSIFY_CASES) + len(CASES)
     if failures:
-        print(f"❌ {failures}/{len(CASES)} FAILED")
+        print(f"❌ {failures}/{total} FAILED")
         return 1
-    print(f"✅ ALL {len(CASES)} CASES PASS")
+    print(f"✅ ALL {total} CASES PASS")
     return 0
 
 
