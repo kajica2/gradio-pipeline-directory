@@ -33,7 +33,7 @@ gradio-pipeline-directory/
 │   ├── deploy-flow.mjs     ← HF token + one-click deploy flow
 │   ├── tester.mjs          ← Connects to a live Space and fires a request
 │   ├── linkcheck.py        ← Outbound link audit (HTTP + HF hub index)
-│   ├── linkcheck.test.py   ← Regression test for the HF link oracle
+│   ├── linkcheck.test.py   ← Regression test for the HF link oracle + status classifier
 │   └── artifacts/          ← Screenshots from the last test run
 ├── robots.txt              ← Crawl policy + sitemap pointer
 ├── sitemap.xml             ← 16 URLs: the 2 pages, the 2 sections, 12 hub sections
@@ -157,24 +157,37 @@ with the repo (normalising the script HF injects into `<head>`), reports the
 so a served file that was pushed but never copied to the Space turns the
 check red instead of going unnoticed.
 
-The HF Space is a *subset* of the repo — it carries the site files only,
-plus its own `README.md` (Space metadata) and `.gitattributes`. It does
-not carry `e2e/`, `scripts/`, `package.json` or `vercel.json`. To sync it:
+The check also protects **its own coverage**. Before comparing anything it
+walks the served asset graph — starting at `index.html` and `tester.html`,
+following every file they load — and fails if any file it reaches is missing
+from the comparison list. A served file that is never compared is a file that
+can go stale on the Space without the check noticing, which is exactly the
+failure the check exists to prevent. `shared/hf-deploy.js` was such a file
+once: loaded by `index.html`, absent from the list, silently uncovered.
+
+### Sync to the Space
+
+The HF Space is a *subset* of the repo — it carries the site files, the
+`gradio-app/` demo app, plus its own `README.md` (Space metadata) and
+`.gitattributes`. It does not carry `e2e/`, `scripts/`, `package.json` or
+`vercel.json`. To sync it:
 
 ```bash
 git clone --depth 1 https://huggingface.co/spaces/kaidjuric/gradio-pipeline-directory /tmp/hf-space
 cd /tmp/hf-space
 cp <repo>/index.html <repo>/tester.html <repo>/robots.txt <repo>/sitemap.xml .
+cp -R <repo>/shared <repo>/data <repo>/gradio-app .
 mkdir -p assets/img && cp <repo>/assets/img/og.png assets/img/
-git add index.html tester.html robots.txt sitemap.xml
-git commit -m "feat(seo): add Open Graph + Twitter preview card"
+git add index.html tester.html robots.txt sitemap.xml shared data gradio-app
+git commit -m "chore: sync site files from the canonical repo"
 git push origin main
 ```
 
 > The Space also serves the site's `shared/` and `data/` directories — copy
 > them too, or the page renders without styles and with no cards. The full
 > set of files the Space needs is: `index.html`, `tester.html`,
-> `robots.txt`, `sitemap.xml`, `shared/`, `data/`, `assets/img/og.png`.
+> `robots.txt`, `sitemap.xml`, `shared/` (including `shared/hf-deploy.js`),
+> `data/`, `assets/img/og.png`, and the `gradio-app/` demo app.
 >
 > `robots.txt` is in that list for completeness — it is committed to the
 > Space repo and shows up in the Space's raw file listing, but the platform
@@ -523,9 +536,17 @@ block Chrome's `ProcessSingleton` lock. Point it at a specific browser with
 Every outbound link in `data/*.json` is checked on demand:
 
 ```bash
-python3 e2e/linkcheck.py       # audit, exits non-zero on a dead link
-python3 e2e/linkcheck.test.py  # regression test for the HF link oracle
+npm run links        # audit, exits non-zero on a dead link
+npm run links:test   # regression test for the HF link oracle + status classifier
 ```
+
+A status that describes the **server's** state rather than the link's
+existence is reported as soft, not dead: `403` behind a known bot wall,
+`429` throttling, and any `5xx`. Those are retried with a backoff first.
+This matters because GitHub answers `504` gateway timeouts when it is busy —
+during one audit that produced 57 "dead links" that were all perfectly
+healthy. Only a hard failure (a real `404`, or a `403` from a host that is
+not a known bot wall) counts as dead.
 
 It also probes the **Gradio Spaces** the directory links to. A Space URL on
 `huggingface.co` is only a front door — the app itself is served from
